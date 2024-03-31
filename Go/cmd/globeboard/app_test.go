@@ -8,8 +8,11 @@ import (
 	"globeboard/internal/utils/constants/Paths"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
+
+var token = os.Getenv("TOKEN")
 
 // TestLibraryGet confirms that the Root Endpoint returns Status I'm a Teapot for All Request.
 func TestRoot(t *testing.T) {
@@ -344,7 +347,7 @@ func TestBookCountGetLanguageNoKey(t *testing.T) {
 // TestBookCountGetLanguage confirms that the Bookcount Endpoint returns Status OK for Get Request with language param.
 func TestBookCountGetLanguage(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG&languages=no", nil)
+	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=no", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -366,7 +369,7 @@ func TestBookCountGetLanguage(t *testing.T) {
 // TestBookCountGetLanguageWrong confirms that the Bookcount Endpoint returns Status Bad Request for Get Request with wrongful language param.
 func TestBookCountGetLanguageWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG&languages=nog", nil)
+	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=nog", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -388,7 +391,7 @@ func TestBookCountGetLanguageWrong(t *testing.T) {
 // TestBookCountGetLanguages confirms that the Bookcount Endpoint returns Status OK for Get Request with multiple language param.
 func TestBookCountGetLanguages(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG&languages=no,es", nil)
+	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=no,es", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -410,7 +413,7 @@ func TestBookCountGetLanguages(t *testing.T) {
 // TestBookCountGetLanguagesWrong confirms that the Bookcount Endpoint returns Status Bad Request for Get Request with same language param.
 func TestBookCountGetLanguagesWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG&languages=no,no", nil)
+	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=no,no", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -468,7 +471,7 @@ func TestBookcountMethodNotAllowed(t *testing.T) {
 // TestReadershipGet confirms that the Readership Endpoint returns Status Bas Request for Get Request without language param.
 func TestReadershipGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG", nil)
+	req, err := http.NewRequest("GET", Endpoints.Readership+"?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -534,7 +537,7 @@ func TestReadershipGetLanguageNoKey(t *testing.T) {
 // TestReadershipGetLanguage confirms that the Readership Endpoint returns Status OK for Get Request with language param.
 func TestReadershipGetLanguage(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG", nil)
+	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -556,7 +559,7 @@ func TestReadershipGetLanguage(t *testing.T) {
 // TestReadershipGetWrong confirms that the Readership Endpoint returns Status Bad Request for Get Request with wrongful language param.
 func TestReadershipGetWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"nog/?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG", nil)
+	req, err := http.NewRequest("GET", Endpoints.Readership+"nog/?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -578,7 +581,7 @@ func TestReadershipGetWrong(t *testing.T) {
 // TestReadershipGetLanguages confirms that the Readership Endpoint returns Status Bad Request for Get Request with multiple language param.
 func TestReadershipGetLanguages(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no,es/?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG", nil)
+	req, err := http.NewRequest("GET", Endpoints.Readership+"no,es/?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -600,7 +603,7 @@ func TestReadershipGetLanguages(t *testing.T) {
 // TestReadershipGetLimit confirms that the Readership Endpoint returns Status OK for Get Request with limit param.
 func TestReadershipGetLimit(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG&limit=1", nil)
+	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token="+token+"&limit=1", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -622,7 +625,7 @@ func TestReadershipGetLimit(t *testing.T) {
 // TestReadershipGetLimitWrong confirms that the Readership Endpoint returns Status Bad Request for Get Request with wrongful limit param.
 func TestReadershipGetLimitWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG&limit=one", nil)
+	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token="+token+"&limit=one", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -702,7 +705,7 @@ func TestStatusGetNoKey(t *testing.T) {
 // TestStatusGet confirms that the Status Endpoint returns Status OK for GET Method.
 func TestStatusGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Status+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG", nil)
+	req, err := http.NewRequest("GET", Endpoints.Status+"?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -804,7 +807,7 @@ func TestSupportedLanguagesGetNoKey(t *testing.T) {
 // TestSupportedLanguagesGet confirms that the Supported Languages Endpoint returns Status OK for GET Method.
 func TestSupportedLanguagesGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.SupportedLanguages+"?token=iKYjrMohsfdxax3p1xn9SOsuE8dnXSnG", nil)
+	req, err := http.NewRequest("GET", Endpoints.SupportedLanguages+"?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
