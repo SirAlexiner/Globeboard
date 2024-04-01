@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+	"net/http"
 )
 
 const (
@@ -54,39 +55,50 @@ func getFirestoreClient(path ...string) (*firestore.Client, error) {
 }
 
 // TestDBConnection attempts to read a specific document to test the DB connection.
-// Returns a string simulating an HTTP status code message.
+// It returns a string with the HTTP status code and message based on the gRPC status code.
 func TestDBConnection() string {
 	client, err := getFirestoreClient()
 	if err != nil {
-		return fmt.Sprintf(err.Error())
+		return fmt.Sprintf("%d %s: %v", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
 	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
-			return
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Printf("Error closing Firestore client: %v", err)
 		}
-	}(client)
+	}()
 
 	ctx := context.Background()
-
-	// Specify the path to the document you want to use for testing the connection.
-	// Adjust "YOUR_COLLECTION_ID" and "YOUR_DOCUMENT_ID" as needed.
 	collectionID := "Connectivity"
 	documentID := "DB_Connection_Test"
 
 	_, err = client.Collection(collectionID).Doc(documentID).Get(ctx)
 	if err != nil {
-		// Here we check if the error is because the document was not found, which can be common.
-		if status.Code(err) == codes.NotFound {
-			return "404 Not Found"
+		grpcStatusCode := status.Code(err)
+		switch grpcStatusCode {
+		case codes.Canceled:
+			return fmt.Sprintf("%d %s", http.StatusRequestTimeout, http.StatusText(http.StatusRequestTimeout))
+		case codes.DeadlineExceeded:
+			return fmt.Sprintf("%d %s", http.StatusGatewayTimeout, http.StatusText(http.StatusGatewayTimeout))
+		case codes.PermissionDenied:
+			return fmt.Sprintf("%d %s", http.StatusForbidden, http.StatusText(http.StatusForbidden))
+		case codes.NotFound:
+			return fmt.Sprintf("%d %s", http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		case codes.ResourceExhausted:
+			return fmt.Sprintf("%d %s", http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
+		case codes.Unauthenticated:
+			return fmt.Sprintf("%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		case codes.Unavailable:
+			return fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable))
+		case codes.Unknown, codes.Internal:
+			return fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		default:
+			// For any other codes, return a generic HTTP 500 error
+			return fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
-		// For other errors, we might want to return a "500 Internal Server Error" or similar message.
-		return "500 Internal Server Error"
 	}
 
 	// If no error, the document was successfully retrieved.
-	return "200 OK"
+	return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
 }
 
 func AddApiKey(userID string, key string) error {
