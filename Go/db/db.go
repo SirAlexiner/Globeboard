@@ -11,6 +11,8 @@ import (
 	"globeboard/internal/utils/structs"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"log"
 )
 
@@ -49,6 +51,42 @@ func getFirestoreClient(path ...string) (*firestore.Client, error) {
 
 	// No errors so we return the test client and no error
 	return client, nil
+}
+
+// TestDBConnection attempts to read a specific document to test the DB connection.
+// Returns a string simulating an HTTP status code message.
+func TestDBConnection() string {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return fmt.Sprintf(err.Error())
+	}
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Println(FirebaseClosingErr + err.Error())
+			return
+		}
+	}(client)
+
+	ctx := context.Background()
+
+	// Specify the path to the document you want to use for testing the connection.
+	// Adjust "YOUR_COLLECTION_ID" and "YOUR_DOCUMENT_ID" as needed.
+	collectionID := "Connectivity"
+	documentID := "DB_Connection_Test"
+
+	_, err = client.Collection(collectionID).Doc(documentID).Get(ctx)
+	if err != nil {
+		// Here we check if the error is because the document was not found, which can be common.
+		if status.Code(err) == codes.NotFound {
+			return "404 Not Found"
+		}
+		// For other errors, we might want to return a "500 Internal Server Error" or similar message.
+		return "500 Internal Server Error"
+	}
+
+	// If no error, the document was successfully retrieved.
+	return "200 OK"
 }
 
 func AddApiKey(userID string, key string) error {

@@ -101,9 +101,12 @@ type Readership struct {
 
 // StatusResponse represents the status response structure.
 type StatusResponse struct {
-	GutendexAPI     string `json:"gutendexapi"`
-	LanguageAPI     string `json:"languageapi"`
-	CountriesAPI    string `json:"countriesapi"`
+	CountriesApi    string `json:"countries_api"`
+	MeteoApi        string `json:"meteo_api"`
+	CurrencyApi     string `json:"currency_api"`
+	FirebaseDB      string `json:"firebase_db"`
+	NotificationDb  string `json:"notification_db"`
+	Webhooks        int    `json:"webhooks"`
 	Version         string `json:"version"`
 	UptimeInSeconds string `json:"uptime"`
 }
