@@ -1,11 +1,11 @@
 // Package External provides external API endpoints used in the application.
 package External
 
-// GutendexAPI represents the endpoint for the Gutendex API.
-// LanguageAPI represents the endpoint for the language2countries API.
+// CurrencyAPI represents the endpoint for the Currency API.
+// OpenMeteoAPI represents the endpoint for the Open-Meteo API.
 // CountriesAPI represents the endpoint for the RESTCountries API.
 const (
-	GutendexAPI  = "http://129.241.150.113:8000/books"
-	LanguageAPI  = "http://129.241.150.113:3000/language2countries/"
+	CurrencyAPI  = "http://129.241.150.113:9090/currency/"
+	OpenMeteoAPI = "" //TODO::Set Actual API Endpoint
 	CountriesAPI = "http://129.241.150.113:8080/v3.1/"
 )

@@ -2,8 +2,8 @@ package main
 
 import (
 	"globeboard/internal/handlers"
-	"globeboard/internal/handlers/endpoint/library"
-	"globeboard/internal/handlers/endpoint/statistics"
+	"globeboard/internal/handlers/endpoint/dashboard"
+	"globeboard/internal/handlers/endpoint/util"
 	"globeboard/internal/utils/constants/Endpoints"
 	"globeboard/internal/utils/constants/Paths"
 	"log"
@@ -21,12 +21,11 @@ func main() {
 
 	// Define HTTP endpoints
 	http.HandleFunc(Paths.Root, handlers.EmptyHandler)
-	http.HandleFunc(Endpoints.Library, library.LibHandler)
-	http.HandleFunc(Endpoints.ApiKey, library.APIKeyHandler)
-	http.HandleFunc(Endpoints.BookCount, statistics.BookCountHandler)
-	http.HandleFunc(Endpoints.Readership, statistics.ReadershipHandler)
-	http.HandleFunc(Endpoints.Status, statistics.StatusHandler)
-	http.HandleFunc(Endpoints.SupportedLanguages, statistics.SupportedLanguagesHandler)
+	http.HandleFunc(Endpoints.ApiKey, util.APIKeyHandler)
+	http.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
+	http.HandleFunc(Endpoints.Dashboards, dashboard.DashboardsHandler)
+	http.HandleFunc(Endpoints.Notifications, dashboard.NotificationsHandler)
+	http.HandleFunc(Endpoints.Status, dashboard.StatusHandler)
 
 	// Start the HTTP server
 	log.Println("Starting server on port " + port + " ...")

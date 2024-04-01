@@ -9,21 +9,22 @@ func init() {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-var APIRunes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
-var UUIDRunes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+var Runes = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 
 func GenerateAPIKey(n int) string {
+	a := make([]rune, n)
 	b := make([]rune, n)
-	for i := range b {
-		b[i] = APIRunes[rand.Intn(len(APIRunes))]
+	for i := range a {
+		a[i] = Runes[rand.Intn(len(Runes))]
+		b[i] = Runes[rand.Intn(len(Runes))]
 	}
-	return string(b)
+	return "sk-" + string(a) + "tLtRjPv" + string(b)
 }
 
-func GenerateUUID(n int) string {
+func GenerateUID(n int) string {
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = UUIDRunes[rand.Intn(len(UUIDRunes))]
+		b[i] = Runes[rand.Intn(len(Runes))]
 	}
 	return string(b)
 }

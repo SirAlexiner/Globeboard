@@ -1,5 +1,5 @@
-// Package statistics provides handlers for statistics-related endpoints.
-package statistics
+// Package dashboard provides handlers for dashboard-related endpoints.
+package dashboard
 
 import (
 	"encoding/json"
@@ -18,8 +18,8 @@ import (
 	"strings"
 )
 
-// BookCountHandler handles requests to the book count API endpoint.
-func BookCountHandler(w http.ResponseWriter, r *http.Request) {
+// DashboardsHandler handles requests to the book count API endpoint.
+func DashboardsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		handleBookCountGetRequest(w, r)
@@ -50,7 +50,7 @@ func fetchData(language string, next string) (*structs.BookCountResponse, error)
 	}
 
 	// Add language parameter to the request if provided, and it's the initial request to the Gutendex API
-	if language != "" && next == External.GutendexAPI {
+	if language != "" && next == External.CurrencyAPI {
 		q := r.URL.Query()
 		q.Add("languages", language)
 		r.URL.RawQuery = q.Encode()
@@ -176,7 +176,7 @@ func retrieveBookCountInfo(languages []string) []structs.BookCountInfo {
 // getTotalProvidedBooks calculates the fraction of provided books.
 func getTotalProvidedBooks(totalBooks int) float64 {
 	// Create a new HTTP request to get the total count of books from the Gutendex API
-	r, err := http.NewRequest(http.MethodGet, External.GutendexAPI, nil)
+	r, err := http.NewRequest(http.MethodGet, External.CurrencyAPI, nil)
 	if err != nil {
 		err := fmt.Errorf("error in creating request: %s", err.Error())
 		log.Println(err)
@@ -222,7 +222,7 @@ func fetchBookCountInfo(lang string, ch chan<- structs.BookCountInfo) {
 	if _func.GetCacheStatus(lang) {
 		nextPage = "/?page=1"
 	} else {
-		nextPage = External.GutendexAPI // Initial URL
+		nextPage = External.CurrencyAPI // Initial URL
 	}
 
 	// Fetch book count information for each page until there are no more pages

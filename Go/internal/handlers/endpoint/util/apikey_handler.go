@@ -1,4 +1,4 @@
-package library
+package util
 
 import (
 	"encoding/base64"
@@ -8,6 +8,7 @@ import (
 	_func "globeboard/internal/func"
 	"globeboard/internal/utils/constants"
 	"net/http"
+	"os"
 )
 
 func APIKeyHandler(w http.ResponseWriter, r *http.Request) {
@@ -40,15 +41,15 @@ func handleApiKeyDeleteRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
-	UUID := _func.GenerateUUID(constants.UserIdLength)
+	UDID := _func.GenerateUID(constants.DocIdLength)
 	key := _func.GenerateAPIKey(constants.ApiKeyLength)
 
 	// Your username and password
-	username := "GutendexAdmin"
-	password := "4dm1n_4cc355_6r4n73d!"
+	username := os.Getenv("AUTH_USER")
+	password := os.Getenv("AUTH_PASS")
 
 	// Concatenate username and password with a colon
-	auth := username + ":" + password
+	auth := username + " : " + password
 
 	// Base64 encode the username and password
 	encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
@@ -62,7 +63,7 @@ func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := db.AddApiKey(UUID, key)
+	err := db.AddApiKey(UDID, key)
 	if err != nil {
 		err := fmt.Sprintf("Error creating API Key: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)

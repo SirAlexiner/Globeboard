@@ -5,6 +5,7 @@ package constants
 const (
 	APIVersion                  = "v1"
 	FirebaseCredentialsFilePath = "./db/firebaseCredentials.json" // Name of the credential file
-	ApiKeyLength                = 32
-	UserIdLength                = 16
+	ApiKeyLength                = 20
+	DocIdLength                 = 24
+	IdLength                    = 16
 )

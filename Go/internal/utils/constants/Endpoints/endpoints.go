@@ -6,16 +6,16 @@ import (
 	"globeboard/internal/utils/constants/Paths"
 )
 
-// Library represents the path to the library endpoint.
-// SupportedLanguages represents the path to the supported_languages endpoint.
-// BookCount represents the path to the bookcount endpoint.
-// Readership represents the path to the readership endpoint.
+// Util represents the path to the util endpoint.
+// Registrations represents the path to the supported_languages endpoint.
+// Dashboards represents the path to the bookcount endpoint.
+// Notifications represents the path to the readership endpoint.
 // Status represents the path to the status endpoint.
 const (
-	Library            = Paths.Library + constants.APIVersion + "/"
-	ApiKey             = Paths.Library + constants.APIVersion + "/key"
-	SupportedLanguages = Paths.LibraryStats + constants.APIVersion + "/supported_languages/"
-	BookCount          = Paths.LibraryStats + constants.APIVersion + "/bookcount/"
-	Readership         = Paths.LibraryStats + constants.APIVersion + "/readership/"
-	Status             = Paths.LibraryStats + constants.APIVersion + "/status/"
+	Util          = Paths.Util + constants.APIVersion + "/"
+	ApiKey        = Paths.Util + constants.APIVersion + "/key"
+	Registrations = Paths.Dashboard + constants.APIVersion + "/registrations/"
+	Dashboards    = Paths.Dashboard + constants.APIVersion + "/dashboards/"
+	Notifications = Paths.Dashboard + constants.APIVersion + "/notifications/"
+	Status        = Paths.Dashboard + constants.APIVersion + "/status/"
 )

@@ -2,10 +2,10 @@
 package Paths
 
 // Root represents the root path.
-// Library represents the root path to the library endpoints
-// LibraryStats represents the root path to the library stats endpoints
+// Util represents the root path to the util endpoints
+// Dashboard represents the root path to the util stats endpoints
 const (
-	Root         = "/"
-	Library      = "/library/"
-	LibraryStats = "/librarystats/"
+	Root      = "/"
+	Util      = "/util/"
+	Dashboard = "/dashboard/"
 )

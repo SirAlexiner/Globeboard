@@ -1,5 +1,5 @@
-// Package statistics provides handlers for statistics-related endpoints.
-package statistics
+// Package dashboard provides handlers for dashboard-related endpoints.
+package dashboard
 
 import (
 	"encoding/json"
@@ -74,8 +74,8 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	// Initialize a status response.
 	status := structs.StatusResponse{
-		GutendexAPI:  getEndpointStatus(External.GutendexAPI),
-		LanguageAPI:  getEndpointStatus(External.LanguageAPI + "no"),
+		GutendexAPI:  getEndpointStatus(External.CurrencyAPI),
+		LanguageAPI:  getEndpointStatus(External.OpenMeteoAPI + "no"),
 		CountriesAPI: getEndpointStatus(External.CountriesAPI + "all"),
 		Version:      constants.APIVersion,
 		// Calculate uptime since the last restart of the service.

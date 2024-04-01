@@ -1,5 +1,5 @@
-// Package statistics provides handlers for statistics-related endpoints.
-package statistics
+// Package dashboard provides handlers for dashboard-related endpoints.
+package dashboard
 
 import (
 	"encoding/json"
@@ -10,8 +10,8 @@ import (
 	"sort"
 )
 
-// SupportedLanguagesHandler handles HTTP GET requests to retrieve supported languages.
-func SupportedLanguagesHandler(w http.ResponseWriter, r *http.Request) {
+// RegistrationsHandler handles HTTP GET requests to retrieve supported languages.
+func RegistrationsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		handleSupportedLanguagesGetRequest(w, r)

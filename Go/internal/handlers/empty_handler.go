@@ -29,11 +29,10 @@ func emptyMethod(w http.ResponseWriter) {
 
 	// Offer information for redirection to endpoints
 	output := "This service does not provide any functionality on root level.\nPlease use endpoints:\n" +
-		anchorStart + Endpoints.Library + "\">" + Endpoints.Library + anchorEnd +
-		anchorStart + Endpoints.BookCount + "\">" + Endpoints.BookCount + anchorEnd +
-		anchorStart + Endpoints.Readership + "\">" + Endpoints.Readership + anchorEnd +
-		anchorStart + Endpoints.Status + "\">" + Endpoints.Status + anchorEnd +
-		anchorStart + Endpoints.SupportedLanguages + "\">" + Endpoints.SupportedLanguages + anchorEnd
+		anchorStart + Endpoints.Registrations + "\">" + Endpoints.Registrations + anchorEnd +
+		anchorStart + Endpoints.Dashboards + "\">" + Endpoints.Dashboards + anchorEnd +
+		anchorStart + Endpoints.Notifications + "\">" + Endpoints.Notifications + anchorEnd +
+		anchorStart + Endpoints.Status + "\">" + Endpoints.Status + anchorEnd
 
 	// Write output to client
 	_, err := fmt.Fprintf(w, "%v", output)

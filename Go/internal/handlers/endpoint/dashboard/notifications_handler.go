@@ -1,5 +1,5 @@
-// Package statistics provides handlers for statistics-related endpoints.
-package statistics
+// Package dashboard provides handlers for dashboard-related endpoints.
+package dashboard
 
 import (
 	"encoding/json"
@@ -16,8 +16,8 @@ import (
 	"strings"
 )
 
-// ReadershipHandler handles requests to retrieve readership statistics for a specific language.
-func ReadershipHandler(w http.ResponseWriter, r *http.Request) {
+// NotificationsHandler handles requests to retrieve readership dashboard for a specific language.
+func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		handleReadershipGetRequest(w, r)
@@ -27,7 +27,7 @@ func ReadershipHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleReadershipGetRequest handles GET requests to retrieve readership statistics for a specific language.
+// handleReadershipGetRequest handles GET requests to retrieve readership dashboard for a specific language.
 func handleReadershipGetRequest(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	languageString := ""
@@ -96,7 +96,7 @@ func handleReadershipGetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get Country response for the language provided
-	r, err = http.NewRequest(http.MethodGet, External.LanguageAPI+languages[0], nil)
+	r, err = http.NewRequest(http.MethodGet, External.OpenMeteoAPI+languages[0], nil)
 	if err != nil {
 		err := fmt.Sprintf("error creating request: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
@@ -129,7 +129,7 @@ func handleReadershipGetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// loopCountryResponse processes the country response and constructs readership statistics.
+// loopCountryResponse processes the country response and constructs readership dashboard.
 func loopCountryResponse(countryResponse []structs.CountryResponse, numBooks int, numAuthors int, limit int) []structs.Readership {
 	// Sort countryResponse alphabetically by country name
 	sort.Slice(countryResponse, func(i, j int) bool {
@@ -150,7 +150,7 @@ func loopCountryResponse(countryResponse []structs.CountryResponse, numBooks int
 		// Retrieve the Population, Google Maps url, FLag PNG, and Alt text (For the flag image) for the country.
 		population, googlemap, png, alt := _func.GetPopulationFlagMapForCountry(country.ISO3166Alpha2)
 
-		// Construct readership statistics and append it to the existing statistics.
+		// Construct readership dashboard and append it to the existing dashboard.
 		countries = append(countries, structs.Readership{
 			Country:    country.OfficialName,
 			ISOCode:    country.ISO3166Alpha2,

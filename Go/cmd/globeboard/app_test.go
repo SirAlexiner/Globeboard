@@ -2,8 +2,7 @@ package main
 
 import (
 	"globeboard/internal/handlers"
-	"globeboard/internal/handlers/endpoint/library"
-	"globeboard/internal/handlers/endpoint/statistics"
+	"globeboard/internal/handlers/endpoint/dashboard"
 	"globeboard/internal/utils/constants/Endpoints"
 	"globeboard/internal/utils/constants/Paths"
 	"net/http"
@@ -64,231 +63,17 @@ func TestRoot(t *testing.T) {
 	}
 }
 
-// TestLibraryGet confirms that the Library Endpoint returns Status OK for Get Request.
-func TestLibraryGet(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-}
-
-// TestSupportedLanguagesGetWrongKey confirms that the Library Endpoint returns Status Not Accepted for GET Method with incorrect token.
-
-// TestLibraryGetLanguage confirms that the Library Endpoint returns Status OK for Get Request with language param.
-func TestLibraryGetLanguage(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?languages=no", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-}
-
-// TestLibraryGetLanguage confirms that the Library Endpoint returns Status OK for Get Request with multiple language param.
-func TestLibraryGetLanguages(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?languages=no,es", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-}
-
-// TestLibraryGetLanguageWrong confirms that the Library Endpoint returns Status Bad Request for Get Request with wrongful language param.
-func TestLibraryGetLanguageWrong(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?languages=nog", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-}
-
-// TestLibraryGetLanguagesWrong confirms that the Library Endpoint returns Status Bad Request for Get Request with the same language param.
-func TestLibraryGetLanguagesWrong(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?languages=no,no", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-}
-
-// TestLibraryGetpage confirms that the Library Endpoint returns Status OK for Get Request with page param.
-func TestLibraryGetpage(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?page=2", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-}
-
-// TestLibraryGetpageWrong confirms that the Library Endpoint returns Status Bad Request for Get Request with wrong page param.
-func TestLibraryGetpageWrong(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?page=one", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-}
-
-// TestLibraryGetSearch confirms that the Library Endpoint returns Status OK for Get Request with search param.
-func TestLibraryGetSearch(t *testing.T) {
-	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Library+"?search=hamsun", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-}
-
-// TestLibraryMethodNotAllowed confirms that the Library Endpoint returns Status Not Implemented for Methods other than GET.
-func TestLibraryMethodNotAllowed(t *testing.T) {
-	// Create a request to your endpoint with a method other than GET
-	req, err := http.NewRequest("POST", Endpoints.Library, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(library.LibHandler)
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusNotImplemented {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusNotImplemented)
-	}
-
-	req, err = http.NewRequest("PUT", Endpoints.Library, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Serve the request to the handler
-	handler.ServeHTTP(rr, req)
-
-	// Check the status code
-	if status := rr.Code; status != http.StatusNotImplemented {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusNotImplemented)
-	}
-}
-
 // TestBookCountGetLanguage confirms that the Bookcount Endpoint returns Status Bas Request for Get Request without language param.
 func TestBookCountGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount, nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -303,14 +88,14 @@ func TestBookCountGet(t *testing.T) {
 // TestBookCountGetWrongKey confirms that the Bookcount Endpoint returns Status Not Accepted for GET Method with incorrect token.
 func TestBookCountGetWrongKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token=c35c5742", nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards+"?token=c35c5742", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -325,14 +110,14 @@ func TestBookCountGetWrongKey(t *testing.T) {
 // TestBookCountGetLanguageNoKey confirms that the Bookcount Endpoint returns Status Bad Request for Get Request without api key.
 func TestBookCountGetLanguageNoKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?languages=no", nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards+"?languages=no", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -347,14 +132,14 @@ func TestBookCountGetLanguageNoKey(t *testing.T) {
 // TestBookCountGetLanguage confirms that the Bookcount Endpoint returns Status OK for Get Request with language param.
 func TestBookCountGetLanguage(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=no", nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards+"?token="+token+"&languages=no", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -369,14 +154,14 @@ func TestBookCountGetLanguage(t *testing.T) {
 // TestBookCountGetLanguageWrong confirms that the Bookcount Endpoint returns Status Bad Request for Get Request with wrongful language param.
 func TestBookCountGetLanguageWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=nog", nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards+"?token="+token+"&languages=nog", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -391,14 +176,14 @@ func TestBookCountGetLanguageWrong(t *testing.T) {
 // TestBookCountGetLanguages confirms that the Bookcount Endpoint returns Status OK for Get Request with multiple language param.
 func TestBookCountGetLanguages(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=no,es", nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards+"?token="+token+"&languages=no,es", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -413,14 +198,14 @@ func TestBookCountGetLanguages(t *testing.T) {
 // TestBookCountGetLanguagesWrong confirms that the Bookcount Endpoint returns Status Bad Request for Get Request with same language param.
 func TestBookCountGetLanguagesWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.BookCount+"?token="+token+"&languages=no,no", nil)
+	req, err := http.NewRequest("GET", Endpoints.Dashboards+"?token="+token+"&languages=no,no", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -435,14 +220,14 @@ func TestBookCountGetLanguagesWrong(t *testing.T) {
 // TestBookcountMethodNotAllowed confirms that the Bookcount Endpoint returns Status Not Implemented for Methods other than GET.
 func TestBookcountMethodNotAllowed(t *testing.T) {
 	// Create a request to your endpoint with a method other than GET
-	req, err := http.NewRequest("POST", Endpoints.BookCount, nil)
+	req, err := http.NewRequest("POST", Endpoints.Dashboards, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -453,7 +238,7 @@ func TestBookcountMethodNotAllowed(t *testing.T) {
 			status, http.StatusNotImplemented)
 	}
 
-	req, err = http.NewRequest("PUT", Endpoints.BookCount, nil)
+	req, err = http.NewRequest("PUT", Endpoints.Dashboards, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -468,17 +253,17 @@ func TestBookcountMethodNotAllowed(t *testing.T) {
 	}
 }
 
-// TestReadershipGet confirms that the Readership Endpoint returns Status Bas Request for Get Request without language param.
+// TestReadershipGet confirms that the Notifications Endpoint returns Status Bas Request for Get Request without language param.
 func TestReadershipGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"?token="+token+"", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -490,17 +275,17 @@ func TestReadershipGet(t *testing.T) {
 	}
 }
 
-// TestSupportedLanguagesGetWrongKey confirms that the Readership Endpoint returns Status Not Accepted for GET Method with incorrect token.
+// TestSupportedLanguagesGetWrongKey confirms that the Notifications Endpoint returns Status Not Accepted for GET Method with incorrect token.
 func TestReadershipGetWrongKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"?token=c35c5742", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"?token=c35c5742", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -512,17 +297,17 @@ func TestReadershipGetWrongKey(t *testing.T) {
 	}
 }
 
-// TestReadershipGetLanguageNoKey confirms that the Readership Endpoint returns Status Bad Request for Get Request without API Token.
+// TestReadershipGetLanguageNoKey confirms that the Notifications Endpoint returns Status Bad Request for Get Request without API Token.
 func TestReadershipGetLanguageNoKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"no", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -534,17 +319,17 @@ func TestReadershipGetLanguageNoKey(t *testing.T) {
 	}
 }
 
-// TestReadershipGetLanguage confirms that the Readership Endpoint returns Status OK for Get Request with language param.
+// TestReadershipGetLanguage confirms that the Notifications Endpoint returns Status OK for Get Request with language param.
 func TestReadershipGetLanguage(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token="+token+"", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"no/?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -556,17 +341,17 @@ func TestReadershipGetLanguage(t *testing.T) {
 	}
 }
 
-// TestReadershipGetWrong confirms that the Readership Endpoint returns Status Bad Request for Get Request with wrongful language param.
+// TestReadershipGetWrong confirms that the Notifications Endpoint returns Status Bad Request for Get Request with wrongful language param.
 func TestReadershipGetWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"nog/?token="+token+"", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"nog/?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -578,17 +363,17 @@ func TestReadershipGetWrong(t *testing.T) {
 	}
 }
 
-// TestReadershipGetLanguages confirms that the Readership Endpoint returns Status Bad Request for Get Request with multiple language param.
+// TestReadershipGetLanguages confirms that the Notifications Endpoint returns Status Bad Request for Get Request with multiple language param.
 func TestReadershipGetLanguages(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no,es/?token="+token+"", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"no,es/?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -600,17 +385,17 @@ func TestReadershipGetLanguages(t *testing.T) {
 	}
 }
 
-// TestReadershipGetLimit confirms that the Readership Endpoint returns Status OK for Get Request with limit param.
+// TestReadershipGetLimit confirms that the Notifications Endpoint returns Status OK for Get Request with limit param.
 func TestReadershipGetLimit(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token="+token+"&limit=1", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"no/?token="+token+"&limit=1", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -622,17 +407,17 @@ func TestReadershipGetLimit(t *testing.T) {
 	}
 }
 
-// TestReadershipGetLimitWrong confirms that the Readership Endpoint returns Status Bad Request for Get Request with wrongful limit param.
+// TestReadershipGetLimitWrong confirms that the Notifications Endpoint returns Status Bad Request for Get Request with wrongful limit param.
 func TestReadershipGetLimitWrong(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Readership+"no/?token="+token+"&limit=one", nil)
+	req, err := http.NewRequest("GET", Endpoints.Notifications+"no/?token="+token+"&limit=one", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -644,17 +429,17 @@ func TestReadershipGetLimitWrong(t *testing.T) {
 	}
 }
 
-// TestReadershipMethodNotAllowed confirms that the Readership Endpoint returns Status Not Implemented for Methods other than GET.
+// TestReadershipMethodNotAllowed confirms that the Notifications Endpoint returns Status Not Implemented for Methods other than GET.
 func TestReadershipMethodNotAllowed(t *testing.T) {
 	// Create a request to your endpoint with a method other than GET
-	req, err := http.NewRequest("POST", Endpoints.Readership, nil)
+	req, err := http.NewRequest("POST", Endpoints.Notifications, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.ReadershipHandler)
+	handler := http.HandlerFunc(dashboard.NotificationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -665,7 +450,7 @@ func TestReadershipMethodNotAllowed(t *testing.T) {
 			status, http.StatusNotImplemented)
 	}
 
-	req, err = http.NewRequest("PUT", Endpoints.Readership, nil)
+	req, err = http.NewRequest("PUT", Endpoints.Notifications, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -690,7 +475,7 @@ func TestStatusGetNoKey(t *testing.T) {
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.StatusHandler)
+	handler := http.HandlerFunc(dashboard.StatusHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -712,7 +497,7 @@ func TestStatusGet(t *testing.T) {
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.StatusHandler)
+	handler := http.HandlerFunc(dashboard.StatusHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -734,7 +519,7 @@ func TestStatusGetWrongKey(t *testing.T) {
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.BookCountHandler)
+	handler := http.HandlerFunc(dashboard.DashboardsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -756,7 +541,7 @@ func TestStatusMethodNotAllowed(t *testing.T) {
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.StatusHandler)
+	handler := http.HandlerFunc(dashboard.StatusHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -785,14 +570,14 @@ func TestStatusMethodNotAllowed(t *testing.T) {
 // TestSupportedLanguagesGetNoKey confirms that the Supported Languages Endpoint returns Status Bad Requests for GET Method without API token.
 func TestSupportedLanguagesGetNoKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.SupportedLanguages, nil)
+	req, err := http.NewRequest("GET", Endpoints.Registrations, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.SupportedLanguagesHandler)
+	handler := http.HandlerFunc(dashboard.RegistrationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -807,14 +592,14 @@ func TestSupportedLanguagesGetNoKey(t *testing.T) {
 // TestSupportedLanguagesGet confirms that the Supported Languages Endpoint returns Status OK for GET Method.
 func TestSupportedLanguagesGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.SupportedLanguages+"?token="+token+"", nil)
+	req, err := http.NewRequest("GET", Endpoints.Registrations+"?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.SupportedLanguagesHandler)
+	handler := http.HandlerFunc(dashboard.RegistrationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -829,14 +614,14 @@ func TestSupportedLanguagesGet(t *testing.T) {
 // TestSupportedLanguagesGetWrongKey confirms that the Supported Languages Endpoint returns Status Not Accepted for GET Method with incorrect token.
 func TestSupportedLanguagesGetWrongKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.SupportedLanguages+"?token=c35c5742", nil)
+	req, err := http.NewRequest("GET", Endpoints.Registrations+"?token=c35c5742", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.SupportedLanguagesHandler)
+	handler := http.HandlerFunc(dashboard.RegistrationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -851,14 +636,14 @@ func TestSupportedLanguagesGetWrongKey(t *testing.T) {
 // TestSupportedLanguagesMethodNotAllowed confirms that the Supported Languages Endpoint returns Status Not Implemented for Methods other than GET.
 func TestSupportedLanguagesMethodNotAllowed(t *testing.T) {
 	// Create a request to your endpoint with a method other than GET
-	req, err := http.NewRequest("POST", Endpoints.SupportedLanguages, nil)
+	req, err := http.NewRequest("POST", Endpoints.Registrations, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(statistics.SupportedLanguagesHandler)
+	handler := http.HandlerFunc(dashboard.RegistrationsHandler)
 
 	// Serve the request to the handler
 	handler.ServeHTTP(rr, req)
@@ -869,7 +654,7 @@ func TestSupportedLanguagesMethodNotAllowed(t *testing.T) {
 			status, http.StatusNotImplemented)
 	}
 
-	req, err = http.NewRequest("PUT", Endpoints.SupportedLanguages, nil)
+	req, err = http.NewRequest("PUT", Endpoints.Registrations, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
