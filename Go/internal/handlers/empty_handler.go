@@ -1,4 +1,4 @@
-// Package handlers provides HTTP request handlers for routing and handling requests within the Gutendex API.
+// Package handlers provide HTTP request handlers for routing and handling requests within the Gutendex API.
 package handlers
 
 import (

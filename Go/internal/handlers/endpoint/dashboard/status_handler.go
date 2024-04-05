@@ -27,7 +27,7 @@ func getEndpointStatus(endpointURL string) string {
 	// Set content type header
 	r.Header.Add("content-type", "application/json")
 
-	// Create HTTP client
+	// Create an HTTP client
 	client := &http.Client{}
 	defer client.CloseIdleConnections()
 
@@ -48,7 +48,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		handleStatusGetRequest(w, r)
 	default:
-		// If method is not supported, return an error response.
+		// If the method is not supported, return an error response.
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported method for this endpoint is: "+http.MethodGet, http.StatusNotImplemented)
 		return
 	}

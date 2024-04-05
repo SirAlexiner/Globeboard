@@ -1,0 +1,9 @@
+**/*.iml
+**/.idea
+**/firebaseCredentials.json
+**/.git
+**/vendor
+*.log
+.deploy
+.dockerignore
+.gitignore

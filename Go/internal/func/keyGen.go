@@ -18,7 +18,7 @@ func GenerateAPIKey(n int) string {
 		a[i] = Runes[rand.Intn(len(Runes))]
 		b[i] = Runes[rand.Intn(len(Runes))]
 	}
-	return "sk-" + string(a) + "tLtRjPv" + string(b)
+	return "sk-" + string(a) + "tTRjPv" + string(b)
 }
 
 func GenerateUID(n int) string {

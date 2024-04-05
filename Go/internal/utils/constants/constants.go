@@ -1,4 +1,4 @@
-// Package constants provides constant values used throughout the application.
+// Package constants provide constant values used throughout the application.
 package constants
 
 // APIVersion represents the version of the API.
@@ -7,5 +7,4 @@ const (
 	FirebaseCredentialsFilePath = "./db/firebaseCredentials.json" // Name of the credential file
 	ApiKeyLength                = 20
 	DocIdLength                 = 24
-	IdLength                    = 16
 )
