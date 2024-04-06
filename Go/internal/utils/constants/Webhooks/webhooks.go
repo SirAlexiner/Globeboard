@@ -11,4 +11,9 @@ const (
 	GETColor    = 1548984  //Info Color
 	PUTColor    = 16761095 //Update Color
 	DELETEColor = 14431557 //Warning Color
+
+	EventRegister = "REGISTER"
+	EventChange   = "CHANGE"
+	EventDelete   = "DELETE"
+	EventInvoke   = "INVOKE"
 )

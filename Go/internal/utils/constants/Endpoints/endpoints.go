@@ -12,8 +12,8 @@ import (
 // Status represents the path to the status endpoint.
 const (
 	ApiKey        = Paths.Util + constants.APIVersion + "/key"
-	Registrations = Paths.Dashboard + constants.APIVersion + "/registrations/"
-	Dashboards    = Paths.Dashboard + constants.APIVersion + "/dashboards/"
-	Notifications = Paths.Dashboard + constants.APIVersion + "/notifications/"
-	Status        = Paths.Dashboard + constants.APIVersion + "/status/"
+	Registrations = Paths.Dashboard + constants.APIVersion + "/registrations"
+	Dashboards    = Paths.Dashboard + constants.APIVersion + "/dashboards"
+	Notifications = Paths.Dashboard + constants.APIVersion + "/notifications"
+	Status        = Paths.Dashboard + constants.APIVersion + "/status"
 )

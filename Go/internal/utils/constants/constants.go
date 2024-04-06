@@ -7,4 +7,5 @@ const (
 	FirebaseCredentialsFilePath = "./db/firebaseCredentials.json" // Name of the credential file
 	ApiKeyLength                = 20
 	DocIdLength                 = 24
+	RegIdLength                 = 16
 )

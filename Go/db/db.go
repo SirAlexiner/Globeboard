@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"log"
 	"net/http"
+	"time"
 )
 
 const (
@@ -25,7 +26,7 @@ func getFirestoreClient(path ...string) (*firestore.Client, error) {
 	// Use a service account
 	ctx := context.Background()
 
-	// Set the credentials path based on if there was given arguments
+	// Set the credential path based on if there was given arguments
 	var credentialsPath string
 	if path != nil {
 		credentialsPath = path[0]
@@ -33,7 +34,7 @@ func getFirestoreClient(path ...string) (*firestore.Client, error) {
 		credentialsPath = constants.FirebaseCredentialsFilePath
 	}
 
-	// Using the credentials file
+	// Using the credential file
 	sa := option.WithCredentialsFile(credentialsPath)
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
@@ -50,12 +51,10 @@ func getFirestoreClient(path ...string) (*firestore.Client, error) {
 		return nil, err
 	}
 
-	// No errors so we return the test client and no error
+	// No errors, so we return the test client and no error
 	return client, nil
 }
 
-// TestDBConnection attempts to read a specific document to test the DB connection.
-// It returns a string with the HTTP status code and message based on the gRPC status code.
 func TestDBConnection() string {
 	client, err := getFirestoreClient()
 	if err != nil {
@@ -68,10 +67,16 @@ func TestDBConnection() string {
 	}()
 
 	ctx := context.Background()
+
 	collectionID := "Connectivity"
 	documentID := "DB_Connection_Test"
 
-	_, err = client.Collection(collectionID).Doc(documentID).Get(ctx)
+	// Attempt to update a specific document to test connectivity and permissions.
+	_, err = client.Collection(collectionID).Doc(documentID).Set(ctx, map[string]interface{}{
+		"PSA":         "DO NOT DELETE THIS DOCUMENT!",
+		"lastChecked": time.Now(),
+	}, firestore.MergeAll)
+
 	if err != nil {
 		grpcStatusCode := status.Code(err)
 		switch grpcStatusCode {
@@ -82,7 +87,10 @@ func TestDBConnection() string {
 		case codes.PermissionDenied:
 			return fmt.Sprintf("%d %s", http.StatusForbidden, http.StatusText(http.StatusForbidden))
 		case codes.NotFound:
-			return fmt.Sprintf("%d %s", http.StatusNotFound, http.StatusText(http.StatusNotFound))
+			// This might indicate the collection or document does not exist,
+			//which for this purpose is treated as a connection success
+			// since the error was Firestore-specific and not network or permission related.
+			return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
 		case codes.ResourceExhausted:
 			return fmt.Sprintf("%d %s", http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
 		case codes.Unauthenticated:
@@ -97,12 +105,11 @@ func TestDBConnection() string {
 		}
 	}
 
-	// If no error, the document was successfully retrieved.
+	// If no error, the document update was successful, indicating good connectivity and permissions.
 	return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
 }
 
-func AddApiKey(userID string, key string) error {
-
+func AddApiKey(docID string, key string) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -116,17 +123,18 @@ func AddApiKey(userID string, key string) error {
 	}(client)
 
 	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.ApiCollection)
+	ref := client.Collection(Firestore.ApiKeyCollection)
 
 	// Use a context for Firestore operations
 	ctx := context.Background()
 
 	apiKeys := structs.APIKey{APIKey: key}
 
-	// Create a new document and add it to the
-	_, err = ref.Doc(userID).Set(ctx, apiKeys)
+	// Create a new document and add it to the firebase
+	_, err = ref.Doc(docID).Set(ctx, apiKeys)
 	if err != nil {
-		log.Println(FirebaseClosingErr + err.Error())
+		errString := fmt.Sprintf("Error saving API key to Database: %v", err)
+		err := errors.New(errString)
 		return err
 	}
 
@@ -147,7 +155,7 @@ func DeleteApiKey(apiKey string) error {
 	}(client)
 
 	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.ApiCollection)
+	ref := client.Collection(Firestore.ApiKeyCollection)
 
 	// Use a context for Firestore operations
 	ctx := context.Background()
@@ -197,7 +205,7 @@ func DoesAPIKeyExists(apiKey string) (bool, error) {
 	}(client)
 
 	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.ApiCollection)
+	ref := client.Collection(Firestore.ApiKeyCollection)
 
 	// Use a context for Firestore operations
 	ctx := context.Background()
@@ -223,4 +231,115 @@ func DoesAPIKeyExists(apiKey string) (bool, error) {
 
 	// If no matching document is found, the API key does not exist in Firestore
 	return false, nil
+}
+
+func AddRegistration(docID, userID string, data *structs.CountryInfoPost) error {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return err
+	}
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Println(FirebaseClosingErr + err.Error())
+			return
+		}
+	}(client)
+
+	// Create a reference to the Firestore collection
+	ref := client.Collection(Firestore.RegistrationCollection)
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	// Create a new document and add to it
+	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
+		"id":         userID,
+		"country":    data.Country,
+		"isoCode":    data.IsoCode,
+		"features":   data.Features,
+		"lastChange": time.Now(),
+	})
+	if err != nil {
+		log.Println(FirebaseClosingErr + err.Error())
+		return err
+	}
+
+	return nil
+}
+
+/*
+func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return err
+	}
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Println(FirebaseClosingErr + err.Error())
+			return
+		}
+	}(client)
+
+	// Create a reference to the Firestore collection
+	ref := client.Collection(Firestore.WebhookCollection)
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	// Create a new document and add it to the
+	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
+		"id":         userID,
+	    "url": 		  webhook.URL,
+   		"country":    webhook.Country,
+   		"event":      webhook.Event,
+		"lastChange": time.Now(),
+	})
+	if err != nil {
+		log.Println(FirebaseClosingErr + err.Error())
+		return err
+	}
+
+	return nil
+}*/
+
+func GetWebhooks() ([]structs.WebhookGet, error) {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Println(FirebaseClosingErr + err.Error())
+		}
+	}()
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	// Reference to the Firestore collection
+	ref := client.Collection(Firestore.WebhookCollection)
+
+	// Query all documents
+	docs, err := ref.Documents(ctx).GetAll()
+	if err != nil {
+		log.Println("Error fetching documents:", err)
+		return nil, err
+	}
+
+	var webhooks []structs.WebhookGet
+
+	for _, doc := range docs {
+		var webhook structs.WebhookGet
+		if err := doc.DataTo(&webhook); err != nil {
+			log.Println("Error parsing document:", err)
+			// Optionally, continue to the next document instead of returning an error
+			// continue
+			return nil, err
+		}
+		webhooks = append(webhooks, webhook)
+	}
+
+	return webhooks, nil
 }

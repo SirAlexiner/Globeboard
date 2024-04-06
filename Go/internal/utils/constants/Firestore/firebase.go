@@ -1,5 +1,7 @@
 package Firestore
 
 const (
-	ApiCollection = "apikey_list"
+	ApiKeyCollection       = "API_keys"
+	RegistrationCollection = "Registrations"
+	WebhookCollection      = "Webhooks"
 )

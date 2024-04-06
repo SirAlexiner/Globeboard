@@ -1,6 +1,5 @@
 **/*.iml
 **/.idea
-**/firebaseCredentials.json
 **/.git
 **/vendor
 *.log

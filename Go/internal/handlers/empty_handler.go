@@ -20,8 +20,8 @@ func emptyMethod(w http.ResponseWriter) {
 	// Ensure interpretation as HTML by client (browser)
 	w.Header().Set("content-type", "text/html")
 
-	// Setting header status to dummy status 418 I'm a Teapot
-	// This is fun, but also a good indicator for the web service that the API is running
+	// Setting header status to status 418 I'm a Teapot
+	// This is fun, but also a good indicator, when checking, that the API is running
 	w.WriteHeader(http.StatusTeapot)
 
 	anchorStart := "<br><a href=\""
@@ -34,7 +34,7 @@ func emptyMethod(w http.ResponseWriter) {
 		anchorStart + Endpoints.Notifications + "\">" + Endpoints.Notifications + anchorEnd +
 		anchorStart + Endpoints.Status + "\">" + Endpoints.Status + anchorEnd
 
-	// Write output to client
+	// Write output to ResponseWriter
 	_, err := fmt.Fprintf(w, "%v", output)
 
 	// Deal with error if any
