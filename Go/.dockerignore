@@ -1,8 +1,12 @@
 **/*.iml
 **/.idea
+**/*.json
 **/.git
+**/.secrets
 **/vendor
 *.log
+*.md
+.env
 .deploy
 .dockerignore
 .gitignore

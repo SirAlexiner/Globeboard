@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -22,16 +23,16 @@ const (
 	FirebaseClosingErr = "Error closing access to firestore: "
 )
 
-func getFirestoreClient(path ...string) (*firestore.Client, error) {
+func getFirestoreClient() (*firestore.Client, error) {
 	// Use a service account
 	ctx := context.Background()
 
-	// Set the credential path based on if there was given arguments
+	// Set the credential path based on if it is running in Docker
 	var credentialsPath string
-	if path != nil {
-		credentialsPath = path[0]
+	if runningInDocker() {
+		credentialsPath = constants.FirebaseCredentialsDockerPath
 	} else {
-		credentialsPath = constants.FirebaseCredentialsFilePath
+		credentialsPath = constants.FirebaseCredentialsDefaultPath
 	}
 
 	// Using the credential file
@@ -53,6 +54,14 @@ func getFirestoreClient(path ...string) (*firestore.Client, error) {
 
 	// No errors, so we return the test client and no error
 	return client, nil
+}
+
+// isRunningInDocker checks if the application is running inside a Docker container.
+func runningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true // .dockerenv exists
+	}
+	return false // .dockerenv does not exist
 }
 
 func TestDBConnection() string {
@@ -233,7 +242,7 @@ func DoesAPIKeyExists(apiKey string) (bool, error) {
 	return false, nil
 }
 
-func AddRegistration(docID, userID string, data *structs.CountryInfoPost) error {
+func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -253,19 +262,97 @@ func AddRegistration(docID, userID string, data *structs.CountryInfoPost) error 
 	ctx := context.Background()
 
 	// Create a new document and add to it
-	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
-		"id":         userID,
-		"country":    data.Country,
-		"isoCode":    data.IsoCode,
-		"features":   data.Features,
-		"lastChange": time.Now(),
-	})
+	_, err = ref.Doc(docID).Set(ctx, data)
 	if err != nil {
 		log.Println(FirebaseClosingErr + err.Error())
 		return err
 	}
 
 	return nil
+}
+
+func GetRegistrations() ([]*structs.CountryInfoGet, error) {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Println(FirebaseClosingErr + err.Error())
+		}
+	}()
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	// Reference to the Firestore collection
+	ref := client.Collection(Firestore.RegistrationCollection)
+
+	// Query all documents
+	docs, err := ref.Documents(ctx).GetAll()
+	if err != nil {
+		log.Println("Error fetching documents:", err)
+		return nil, err
+	}
+
+	var cis []*structs.CountryInfoGet
+
+	for _, doc := range docs {
+		var ci *structs.CountryInfoGet
+		if err := doc.DataTo(&ci); err != nil {
+			log.Println("Error parsing document:", err)
+			// Optionally, continue to the next document instead of returning an error
+			// continue
+			return nil, err
+		}
+		cis = append(cis, ci)
+	}
+
+	return cis, nil
+}
+
+func GetSpecificRegistration(id string) (*structs.CountryInfoGet, error) {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Println(FirebaseClosingErr + err.Error())
+		}
+	}()
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	// Reference to the Firestore collection
+	ref := client.Collection(Firestore.RegistrationCollection)
+
+	query := ref.Where("Id", "==", id).Limit(1)
+	iter := query.Documents(ctx)
+	defer iter.Stop()
+
+	var ci *structs.CountryInfoGet
+
+	// Iterate over the query results
+	for {
+		doc, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to iterate over query results: %v", err)
+		}
+		if err := doc.DataTo(&ci); err != nil {
+			log.Println("Error parsing document:", err)
+			// Optionally, continue to the next document instead of returning an error
+			// continue
+			return nil, err
+		}
+		return ci, nil
+	}
+
+	return nil, errors.New("no document with that id was found")
 }
 
 /*

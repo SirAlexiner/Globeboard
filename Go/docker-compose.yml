@@ -4,8 +4,11 @@ services:
   globeboard:
     build: .
     ports:
-      - "${PORT}:${PORT}"
-    env_file:
-      - .env
+      - '${PORT}:${PORT}'
+    environment:
+      - PORT=${PORT}
+      - AUTH_USER=${AUTH_USER}
+      - AUTH_PASS=${AUTH_PASS}
+      - TOKEN=${TOKEN}
     volumes:
-      - ./db/firebaseCredentials.json:/root/firebaseCredentials.json
+      - ./.secrets:/credentials:ro

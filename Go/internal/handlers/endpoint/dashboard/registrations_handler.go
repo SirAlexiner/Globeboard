@@ -13,6 +13,7 @@ import (
 	"globeboard/internal/utils/structs"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -31,8 +32,8 @@ func RegistrationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DecodeCountryInfo(data io.ReadCloser) (*structs.CountryInfoPost, error) {
-	var ci *structs.CountryInfoPost
+func DecodeCountryInfo(data io.ReadCloser) (*structs.CountryInfoGet, error) {
+	var ci *structs.CountryInfoGet
 	if err := json.NewDecoder(data).Decode(&ci); err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func DecodeCountryInfo(data io.ReadCloser) (*structs.CountryInfoPost, error) {
 	return ci, nil
 }
 
-func validateCountryNameIsoCode(ci *structs.CountryInfoPost) error {
+func validateCountryNameIsoCode(ci *structs.CountryInfoGet) error {
 	validCountries, err := _func.GetSupportedCountries() // Adjusted to use the map version.
 	if err != nil {
 		return errors.New("error validating country")
@@ -71,14 +72,14 @@ func validateCountryNameIsoCode(ci *structs.CountryInfoPost) error {
 	return validateCorrespondence(ci, validCountries)
 }
 
-func validateCountryOrIsoCodeProvided(ci *structs.CountryInfoPost) error {
+func validateCountryOrIsoCodeProvided(ci *structs.CountryInfoGet) error {
 	if ci.Country == "" && ci.IsoCode == "" {
 		return errors.New("either country name or ISO code must be provided")
 	}
 	return nil
 }
 
-func validateIsoCode(ci *structs.CountryInfoPost, validCountries map[string]string) error {
+func validateIsoCode(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.IsoCode != "" {
 		if _, exists := validCountries[ci.IsoCode]; !exists {
 			return errors.New("invalid ISO code")
@@ -87,7 +88,7 @@ func validateIsoCode(ci *structs.CountryInfoPost, validCountries map[string]stri
 	return nil
 }
 
-func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoPost, validCountries map[string]string) error {
+func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.IsoCode == "" && ci.Country != "" {
 		for code, name := range validCountries {
 			if name == ci.Country {
@@ -100,7 +101,7 @@ func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoPost, validCountr
 	return nil
 }
 
-func validateCorrespondence(ci *structs.CountryInfoPost, validCountries map[string]string) error {
+func validateCorrespondence(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.Country != "" && ci.IsoCode != "" {
 		if validCountries[ci.IsoCode] != ci.Country {
 			return errors.New("ISO code and country name do not match")
@@ -146,7 +147,12 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	UDID := _func.GenerateUID(constants.DocIdLength)
 	UUID := _func.GenerateUID(constants.RegIdLength)
 
-	err = db.AddRegistration(UDID, UUID, ci)
+	lastchange := time.Now()
+
+	ci.Id = UUID
+	ci.Lastchange = lastchange
+
+	err = db.AddRegistration(UDID, ci)
 	if err != nil {
 		http.Error(w, "Error storing data in database", http.StatusInternalServerError)
 		return
@@ -154,7 +160,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 
 	response := map[string]interface{}{
 		"id":         UUID,
-		"lastChange": time.Now(),
+		"lastChange": lastchange,
 	}
 
 	// Set Content-Type header
@@ -176,7 +182,86 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 
 // handleRegGetRequest handles GET requests to retrieve a registered country.
 func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
-	//TODO::Complete HTTP Method Requests
+	parts := strings.Split(r.URL.Path, "/")
+	registrationId := ""
+	if len(parts) >= 5 {
+		registrationId = parts[4] // Language code will be at index 4
+	} else {
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		return
+	}
+	query := r.URL.Query()
+	token := query.Get("token")
+	if token == "" {
+		http.Error(w, "Please provide API Token", http.StatusBadRequest)
+		return
+	}
+	exists, err := db.DoesAPIKeyExists(token)
+	if err != nil {
+		err := fmt.Sprintf("Error checking API key: %v", err)
+		http.Error(w, err, http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		err := fmt.Sprintf("API key not accepted")
+		http.Error(w, err, http.StatusNotAcceptable)
+		return
+	}
+	if registrationId == "" {
+		GetAllRegistrations(w)
+	} else {
+		GetSpecificRegistrations(w, registrationId)
+	}
+}
+
+func GetAllRegistrations(w http.ResponseWriter) {
+	regs, err := db.GetRegistrations()
+	if err != nil {
+		http.Error(w, "Error storing data in database", http.StatusInternalServerError)
+		return
+	}
+
+	// Set Content-Type header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the status code to the response
+	w.WriteHeader(http.StatusOK)
+
+	// Serialize the struct to JSON and write it to the response
+	err = json.NewEncoder(w).Encode(regs)
+	if err != nil {
+		// Handle error
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, reg := range regs {
+		_func.LoopSendWebhooks(reg, Endpoints.Registrations, Webhooks.EventInvoke)
+	}
+}
+
+func GetSpecificRegistrations(w http.ResponseWriter, id string) {
+	reg, err := db.GetSpecificRegistration(id)
+	if err != nil {
+		http.Error(w, "Error storing data in database", http.StatusInternalServerError)
+		return
+	}
+
+	// Set Content-Type header
+	w.Header().Set("Content-Type", "application/json")
+
+	// Write the status code to the response
+	w.WriteHeader(http.StatusOK)
+
+	// Serialize the struct to JSON and write it to the response
+	err = json.NewEncoder(w).Encode(reg)
+	if err != nil {
+		// Handle error
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_func.LoopSendWebhooks(reg, Endpoints.Registrations, Webhooks.EventInvoke)
 }
 
 // handleRegPutRequest handles PUT requests to Update a registered country.

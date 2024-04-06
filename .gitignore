@@ -1,3 +1,4 @@
-**/firebaseCredentials.json
+**/.secrets
+**/*.json
 .idea
 .env

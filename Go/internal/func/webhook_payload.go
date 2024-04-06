@@ -14,7 +14,30 @@ import (
 	"time"
 )
 
-func LoopSendWebhooks(ci *structs.CountryInfoPost, endpoint, eventAction string) {
+func LoopSendWebhooks(ci *structs.CountryInfoGet, endpoint, eventAction string) {
+	title := ""
+	color := 0
+	method := ""
+
+	switch eventAction {
+	case Webhooks.EventRegister:
+		title = Webhooks.POSTTitle
+		color = Webhooks.POSTColor
+		method = http.MethodPost
+	case Webhooks.EventChange:
+		title = Webhooks.PUTTitle
+		color = Webhooks.PUTColor
+		method = http.MethodPut
+	case Webhooks.EventDelete:
+		title = Webhooks.DELETETitle
+		color = Webhooks.DELETEColor
+		method = http.MethodDelete
+	case Webhooks.EventInvoke:
+		title = Webhooks.GETTitle
+		color = Webhooks.GETColor
+		method = http.MethodGet
+
+	}
 	webhooks, err := db.GetWebhooks()
 	if err != nil {
 		log.Printf("Error retriving webhooks from database: %v", err)
@@ -26,17 +49,17 @@ func LoopSendWebhooks(ci *structs.CountryInfoPost, endpoint, eventAction string)
 			if stringListContains(webhook.Event, eventAction) {
 				if strings.Contains(webhook.URL, "discord") {
 					sendDiscordWebhookPayload(
-						Webhooks.POSTTitle,
-						Webhooks.POSTColor,
-						http.MethodPost,
+						title,
+						color,
+						method,
 						endpoint,
 						ci.IsoCode,
 						ci,
 						webhook.URL)
 				} else {
 					sendWebhookPayload(
-						Webhooks.POSTTitle,
-						http.MethodPost,
+						title,
+						method,
 						endpoint,
 						ci.IsoCode,
 						webhook.URL)
