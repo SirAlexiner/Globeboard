@@ -2,43 +2,51 @@
 package handlers
 
 import (
-	"fmt"
-	"globeboard/internal/utils/constants/Endpoints"
+	"io"
+	"log"
 	"net/http"
+	"os"
+)
+
+const (
+	ISE = "Internal Server Error"
 )
 
 // EmptyHandler handles every request to the root path by redirecting to the endpoints.
 func EmptyHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	default:
-		emptyMethod(w)
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
 	}
-}
 
-// emptyMethod handles the response for any methods sent to the root path.
-func emptyMethod(w http.ResponseWriter) {
-	// Ensure interpretation as HTML by client (browser)
-	w.Header().Set("content-type", "text/html")
+	filePath := "./web/root.html"
 
-	// Setting header status to status 418 I'm a Teapot
-	// This is fun, but also a good indicator, when checking, that the API is running
-	w.WriteHeader(http.StatusTeapot)
+	// Set the "Content-Type" header.
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	anchorStart := "<br><a href=\""
-	anchorEnd := "</a>\n"
+	// Set the status code to indicate the redirection.
+	w.WriteHeader(http.StatusSeeOther)
 
-	// Offer information for redirection to endpoints
-	output := "This service does not provide any functionality on root level.\nPlease use endpoints:\n" +
-		anchorStart + Endpoints.RegistrationsSlash + "\">" + Endpoints.RegistrationsSlash + anchorEnd +
-		anchorStart + Endpoints.Dashboards + "\">" + Endpoints.Dashboards + anchorEnd +
-		anchorStart + Endpoints.Notifications + "\">" + Endpoints.Notifications + anchorEnd +
-		anchorStart + Endpoints.Status + "\">" + Endpoints.Status + anchorEnd
-
-	// Write output to ResponseWriter
-	_, err := fmt.Fprintf(w, "%v", output)
-
-	// Deal with error if any
+	// Open the file.
+	file, err := os.Open(filePath)
 	if err != nil {
-		http.Error(w, "Error when returning output", http.StatusInternalServerError)
+		log.Print("Error opening root file: ", err)
+		http.Error(w, ISE, http.StatusInternalServerError)
+		return
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Print("Error closing root file: ", err)
+			http.Error(w, ISE, http.StatusInternalServerError)
+			return
+		}
+	}(file)
+
+	_, err = io.Copy(w, file)
+	if err != nil {
+		log.Print("Error copying root file to ResponseWriter: ", err)
+		http.Error(w, ISE, http.StatusInternalServerError)
+		return
 	}
 }

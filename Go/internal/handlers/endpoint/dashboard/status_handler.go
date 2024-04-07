@@ -49,7 +49,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 		handleStatusGetRequest(w, r)
 	default:
 		// If the method is not supported, return an error response.
-		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported method for this endpoint is: "+http.MethodGet, http.StatusNotImplemented)
+		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is: "+http.MethodGet, http.StatusNotImplemented)
 		return
 	}
 }
@@ -61,14 +61,8 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please provide API Token", http.StatusBadRequest)
 		return
 	}
-	exists, err := db.DoesAPIKeyExists(token)
-	if err != nil {
-		err := fmt.Sprintf("Error checking API key: %v", err)
-		http.Error(w, err, http.StatusInternalServerError)
-		return
-	}
-
-	if !exists {
+	uuid := db.GetAPIKeyUUID(token)
+	if uuid == "" {
 		err := fmt.Sprintf("API key not accepted")
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
@@ -90,7 +84,7 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "application/json")
 
 	// Encode status as JSON and send the response.
-	err = json.NewEncoder(w).Encode(status)
+	err := json.NewEncoder(w).Encode(status)
 	if err != nil {
 		// If encoding fails, return an error response.
 		http.Error(w, "Error during encoding: "+err.Error(), http.StatusInternalServerError)

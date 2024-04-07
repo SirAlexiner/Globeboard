@@ -4,13 +4,15 @@ package structs
 import "time"
 
 type APIKey struct {
+	UUID   string `json:"uuid"`
 	APIKey string `json:"api_key"`
 }
 
 // Registrations Structs
 
 type CountryInfoGet struct {
-	Id         string    `json:"id"`
+	ID         string    `json:"id"`
+	UUID       string    `json:"uuid"`
 	Country    string    `json:"country"`
 	IsoCode    string    `json:"isoCode"`
 	Features   Features  `json:"features"`
@@ -49,9 +51,14 @@ type WebhookPost struct {
 
 type WebhookGet struct {
 	ID      string   `json:"id"`
+	UUID    string   `json:"uuid"`
 	URL     string   `json:"url"`
 	Country string   `json:"country,omitempty"`
 	Event   []string `json:"event"`
+}
+
+type Author struct {
+	Name string `json:"name"`
 }
 
 type Field struct {
@@ -66,6 +73,7 @@ type Footer struct {
 
 type Embed struct {
 	Title       string  `json:"title"`
+	Author      Author  `json:"author"`
 	Description string  `json:"description"`
 	Timestamp   string  `json:"timestamp"`
 	Color       int     `json:"color"`

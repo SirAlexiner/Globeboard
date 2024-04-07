@@ -7,8 +7,6 @@ services:
       - '${PORT}:${PORT}'
     environment:
       - PORT=${PORT}
-      - AUTH_USER=${AUTH_USER}
-      - AUTH_PASS=${AUTH_PASS}
       - TOKEN=${TOKEN}
     volumes:
       - ./.secrets:/credentials:ro

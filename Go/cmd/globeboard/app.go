@@ -20,15 +20,18 @@ func main() {
 	}
 
 	// Define HTTP endpoints
-	http.HandleFunc(Paths.Root, handlers.EmptyHandler)
-	http.HandleFunc(Endpoints.ApiKey, util.APIKeyHandler)
-	http.HandleFunc(Endpoints.RegistrationsSlash, dashboard.RegistrationsHandler)
-	http.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
-	http.HandleFunc(Endpoints.Dashboards, dashboard.DashboardsHandler)
-	http.HandleFunc(Endpoints.Notifications, dashboard.NotificationsHandler)
-	http.HandleFunc(Endpoints.Status, dashboard.StatusHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc(Paths.Root, handlers.EmptyHandler)
+	mux.HandleFunc(Endpoints.UserRegistration, util.UserRegistrationHandler)
+	mux.HandleFunc(Endpoints.ApiKey, util.APIKeyHandler)
+	mux.HandleFunc(Endpoints.RegistrationsID, dashboard.RegistrationsHandler)
+	mux.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
+	mux.HandleFunc(Endpoints.Dashboards, dashboard.DashboardsHandler)
+	mux.HandleFunc(Endpoints.NotificationsID, dashboard.NotificationsHandler)
+	mux.HandleFunc(Endpoints.Notifications, dashboard.NotificationsHandler)
+	mux.HandleFunc(Endpoints.Status, dashboard.StatusHandler)
 
 	// Start the HTTP server
 	log.Println("Starting server on port " + port + " ...")
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
