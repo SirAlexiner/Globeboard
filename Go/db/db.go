@@ -20,7 +20,8 @@ import (
 )
 
 const (
-	FirebaseClosingErr = "Error closing access to firestore: "
+	FirebaseClosingErr = "Error closing access to firestore: %v\n"
+	IterationFailed    = "failed to iterate over query results: %v\n"
 )
 
 func getFirestoreClient() (*firestore.Client, error) {
@@ -126,7 +127,7 @@ func AddApiKey(docID string, key string) error {
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 			return
 		}
 	}(client)
@@ -158,7 +159,7 @@ func DeleteApiKey(apiKey string) error {
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 			return
 		}
 	}(client)
@@ -180,7 +181,7 @@ func DeleteApiKey(apiKey string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("failed to iterate over query results: %v", err)
+			return fmt.Errorf(IterationFailed, err)
 		}
 		docID = doc.Ref.ID
 	}
@@ -208,7 +209,7 @@ func DoesAPIKeyExists(apiKey string) (bool, error) {
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 			return
 		}
 	}(client)
@@ -231,7 +232,7 @@ func DoesAPIKeyExists(apiKey string) (bool, error) {
 			break
 		}
 		if err != nil {
-			return false, fmt.Errorf("failed to iterate over query results: %v", err)
+			return false, fmt.Errorf(IterationFailed, err)
 		}
 		// If a document is found, the API key exists in Firestore
 		_ = doc // You can process the document if needed
@@ -250,7 +251,7 @@ func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 			return
 		}
 	}(client)
@@ -264,7 +265,7 @@ func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 	// Create a new document and add to it
 	_, err = ref.Doc(docID).Set(ctx, data)
 	if err != nil {
-		log.Println(FirebaseClosingErr + err.Error())
+		log.Println("Error saving data to database" + err.Error())
 		return err
 	}
 
@@ -278,7 +279,7 @@ func GetRegistrations() ([]*structs.CountryInfoGet, error) {
 	}
 	defer func() {
 		if err := client.Close(); err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 		}
 	}()
 
@@ -300,7 +301,7 @@ func GetRegistrations() ([]*structs.CountryInfoGet, error) {
 	for _, doc := range docs {
 		var ci *structs.CountryInfoGet
 		if err := doc.DataTo(&ci); err != nil {
-			log.Println("Error parsing document:", err)
+			log.Printf("Error parsing document: %v\n", err)
 			// Optionally, continue to the next document instead of returning an error
 			// continue
 			return nil, err
@@ -318,7 +319,7 @@ func GetSpecificRegistration(id string) (*structs.CountryInfoGet, error) {
 	}
 	defer func() {
 		if err := client.Close(); err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 		}
 	}()
 
@@ -341,7 +342,7 @@ func GetSpecificRegistration(id string) (*structs.CountryInfoGet, error) {
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("failed to iterate over query results: %v", err)
+			return nil, fmt.Errorf(IterationFailed, err)
 		}
 		if err := doc.DataTo(&ci); err != nil {
 			log.Println("Error parsing document:", err)
@@ -355,6 +356,97 @@ func GetSpecificRegistration(id string) (*structs.CountryInfoGet, error) {
 	return nil, errors.New("no document with that id was found")
 }
 
+func UpdateRegistration(id string, data *structs.CountryInfoGet) error {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Printf(FirebaseClosingErr, err)
+		}
+	}()
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	// Reference to the Firestore collection
+	ref := client.Collection(Firestore.RegistrationCollection)
+
+	query := ref.Where("Id", "==", id).Limit(1)
+	iter := query.Documents(ctx)
+	defer iter.Stop()
+
+	// Iterate over the query results
+	for {
+		doc, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf(IterationFailed, err)
+		}
+		_, err = ref.Doc(doc.Ref.ID).Set(ctx, data)
+		if err != nil {
+			log.Printf("Error saving data to database: %v\n", err)
+			return err
+		}
+		return nil
+	}
+
+	return errors.New("no document with that id was found")
+}
+
+func DeleteRegistration(id string) error {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return err
+	}
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Printf(FirebaseClosingErr, err)
+			return
+		}
+	}(client)
+
+	// Create a reference to the Firestore collection
+	ref := client.Collection(Firestore.RegistrationCollection)
+
+	// Use a context for Firestore operations
+	ctx := context.Background()
+
+	query := ref.Where("Id", "==", id).Limit(1)
+	iter := query.Documents(ctx)
+	defer iter.Stop()
+
+	var docID string
+	for {
+		doc, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf(IterationFailed, err)
+		}
+		docID = doc.Ref.ID
+	}
+
+	// If docID is empty, the API key does not exist in Firestore
+	if docID == "" {
+		return fmt.Errorf("ID match was not found")
+	}
+
+	// Delete the document with the provided API key
+	_, err = ref.Doc(docID).Delete(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to delete document: %v", err)
+	}
+
+	fmt.Printf("Registration document %s deleted successfully\n", docID)
+	return nil
+}
+
 /*
 func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
 	client, err := getFirestoreClient()
@@ -364,7 +456,7 @@ func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
 	defer func(client *firestore.Client) {
 		err := client.Close()
 		if err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 			return
 		}
 	}(client)
@@ -384,7 +476,7 @@ func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
 		"lastChange": time.Now(),
 	})
 	if err != nil {
-		log.Println(FirebaseClosingErr + err.Error())
+		log.Printf(FirebaseClosingErr, err)
 		return err
 	}
 
@@ -398,7 +490,7 @@ func GetWebhooks() ([]structs.WebhookGet, error) {
 	}
 	defer func() {
 		if err := client.Close(); err != nil {
-			log.Println(FirebaseClosingErr + err.Error())
+			log.Printf(FirebaseClosingErr, err)
 		}
 	}()
 
@@ -411,7 +503,7 @@ func GetWebhooks() ([]structs.WebhookGet, error) {
 	// Query all documents
 	docs, err := ref.Documents(ctx).GetAll()
 	if err != nil {
-		log.Println("Error fetching documents:", err)
+		log.Printf("Error fetching documents: %v\n", err)
 		return nil, err
 	}
 
@@ -420,7 +512,7 @@ func GetWebhooks() ([]structs.WebhookGet, error) {
 	for _, doc := range docs {
 		var webhook structs.WebhookGet
 		if err := doc.DataTo(&webhook); err != nil {
-			log.Println("Error parsing document:", err)
+			log.Printf("Error parsing document: %v\n", err)
 			// Optionally, continue to the next document instead of returning an error
 			// continue
 			return nil, err

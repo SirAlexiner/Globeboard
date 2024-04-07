@@ -7,20 +7,14 @@ type APIKey struct {
 	APIKey string `json:"api_key"`
 }
 
+// Registrations Structs
+
 type CountryInfoGet struct {
 	Id         string    `json:"id"`
 	Country    string    `json:"country"`
 	IsoCode    string    `json:"isoCode"`
 	Features   Features  `json:"features"`
 	Lastchange time.Time `json:"lastchange"`
-}
-
-// Registrations Structs
-
-type CountryInfoPost struct {
-	Country  string   `json:"country"`
-	IsoCode  string   `json:"isoCode"`
-	Features Features `json:"features"`
 }
 
 type Features struct {

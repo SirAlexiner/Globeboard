@@ -22,6 +22,7 @@ func main() {
 	// Define HTTP endpoints
 	http.HandleFunc(Paths.Root, handlers.EmptyHandler)
 	http.HandleFunc(Endpoints.ApiKey, util.APIKeyHandler)
+	http.HandleFunc(Endpoints.RegistrationsSlash, dashboard.RegistrationsHandler)
 	http.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
 	http.HandleFunc(Endpoints.Dashboards, dashboard.DashboardsHandler)
 	http.HandleFunc(Endpoints.Notifications, dashboard.NotificationsHandler)

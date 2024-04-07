@@ -27,7 +27,7 @@ func LoopSendWebhooks(ci *structs.CountryInfoGet, endpoint, eventAction string) 
 	case Webhooks.EventChange:
 		title = Webhooks.PUTTitle
 		color = Webhooks.PUTColor
-		method = http.MethodPut
+		method = http.MethodPatch
 	case Webhooks.EventDelete:
 		title = Webhooks.DELETETitle
 		color = Webhooks.DELETEColor

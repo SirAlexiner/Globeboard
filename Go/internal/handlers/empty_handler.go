@@ -29,7 +29,7 @@ func emptyMethod(w http.ResponseWriter) {
 
 	// Offer information for redirection to endpoints
 	output := "This service does not provide any functionality on root level.\nPlease use endpoints:\n" +
-		anchorStart + Endpoints.Registrations + "\">" + Endpoints.Registrations + anchorEnd +
+		anchorStart + Endpoints.RegistrationsSlash + "\">" + Endpoints.RegistrationsSlash + anchorEnd +
 		anchorStart + Endpoints.Dashboards + "\">" + Endpoints.Dashboards + anchorEnd +
 		anchorStart + Endpoints.Notifications + "\">" + Endpoints.Notifications + anchorEnd +
 		anchorStart + Endpoints.Status + "\">" + Endpoints.Status + anchorEnd
