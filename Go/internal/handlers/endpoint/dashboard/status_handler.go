@@ -10,7 +10,6 @@ import (
 	"globeboard/internal/utils/structs"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -67,15 +66,22 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
+
+	user, err := db.GetWebhooksUser(uuid)
+	if err != nil {
+		log.Print("Error retrieving users webhooks:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	// Initialize a status response.
 	status := structs.StatusResponse{
-		CountriesApi:   getEndpointStatus(External.CountriesAPI + "all"),
-		MeteoApi:       getEndpointStatus(External.OpenMeteoAPI),
-		CurrencyApi:    getEndpointStatus(External.CurrencyAPI + "nok"),
-		FirebaseDB:     db.TestDBConnection(),
-		NotificationDb: strconv.Itoa(http.StatusNotImplemented) + " Not Implemented", // TODO::Update with Notification DB
-		Webhooks:       0,                                                            //TODO::Get Actual number of webhooks
-		Version:        constants.APIVersion,
+		CountriesApi: getEndpointStatus(External.CountriesAPI + "all"),
+		MeteoApi:     getEndpointStatus(External.OpenMeteoAPI),
+		CurrencyApi:  getEndpointStatus(External.CurrencyAPI + "nok"),
+		FirebaseDB:   db.TestDBConnection(),
+		Webhooks:     len(user),
+		Version:      constants.APIVersion,
 		// Calculate uptime since the last restart of the service.
 		UptimeInSeconds: fmt.Sprintf("%f Seconds", time.Since(startTime).Seconds()),
 	}
@@ -84,7 +90,7 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "application/json")
 
 	// Encode status as JSON and send the response.
-	err := json.NewEncoder(w).Encode(status)
+	err = json.NewEncoder(w).Encode(status)
 	if err != nil {
 		// If encoding fails, return an error response.
 		http.Error(w, "Error during encoding: "+err.Error(), http.StatusInternalServerError)

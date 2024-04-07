@@ -35,7 +35,6 @@ type StatusResponse struct {
 	MeteoApi        string `json:"meteo_api"`
 	CurrencyApi     string `json:"currency_api"`
 	FirebaseDB      string `json:"firebase_db"`
-	NotificationDb  string `json:"notification_db"`
 	Webhooks        int    `json:"webhooks"`
 	Version         string `json:"version"`
 	UptimeInSeconds string `json:"uptime"`

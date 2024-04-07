@@ -452,7 +452,7 @@ func DeleteRegistration(id, uuid string) error {
 	// Use a context for Firestore operations
 	ctx := context.Background()
 
-	query := ref.Where("ID", "==", id).Where("uuid", "==", uuid).Limit(1)
+	query := ref.Where("id", "==", id).Where("uuid", "==", uuid).Limit(1)
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
@@ -559,7 +559,7 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	return webhooks, nil
 }
 
-/*func GetWebhooksUser(uuid string) ([]structs.WebhookGet, error) {
+func GetWebhooksUser(uuid string) ([]structs.WebhookGet, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
@@ -600,4 +600,4 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	}
 
 	return webhooks, nil
-}*/
+}
