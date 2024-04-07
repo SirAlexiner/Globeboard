@@ -1,12 +1,96 @@
-**/*.iml
-**/.idea
-**/*.json
-**/.git
-**/.secrets
-**/vendor
+# Common directories and files to ignore
+**/.DS_Store
+**/Thumbs.db
+
+# Compiled source #
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
 *.log
-*.md
+*.sql
+*.db
+*.sqlite
+
+# Dependency directories
+**/node_modules/
+**/bower_components/
+**/dist/
+.tmp/
+.out/
+**/vendor/
+
+# Build folders
+**/build/
+**/target/
+
+# Editor and IDE specific files
+# Visual Studio Code
+**/.vscode/
+
+# IntelliJ IDEA and related JetBrains IDEs (e.g., GoLand, PyCharm)
+**/.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+
+# Xcode
+*~.nib
+*.nib
+*.pbxuser
+*.perspective
+*.perspectivev3
+*.mode1v3
+*.mode2v3
+*.workspace
+xcuserdata
+
+# Large media files
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.mpg
+*.mpeg
+*.flv
+*.m4v
+*.wmv
+*.mp3
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Personal ignore patterns
+**/firebasecredentials.json
+**/.secrets
 .env
-.deploy
-.dockerignore
-.gitignore
+
+# Ignore markdown files
+*.md
