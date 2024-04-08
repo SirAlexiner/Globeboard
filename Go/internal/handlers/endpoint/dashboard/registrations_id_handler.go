@@ -104,10 +104,10 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	countryInfo, err := patchCountryInformation(r, id, uuid)
+	countryInfo, err, errcode := patchCountryInformation(r, id, uuid)
 	if err != nil {
 		err := fmt.Sprintf("Error patching data together: %v", err)
-		http.Error(w, err, http.StatusInternalServerError)
+		http.Error(w, err, errcode)
 		return
 	}
 
@@ -131,37 +131,37 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 	_func.LoopSendWebhooks(uuid, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
 }
 
-func patchCountryInformation(r *http.Request, registrationId, uuid string) (*structs.CountryInfoGet, error) {
+func patchCountryInformation(r *http.Request, registrationId, uuid string) (*structs.CountryInfoGet, error, int) {
 	reg, err := db.GetSpecificRegistration(registrationId, uuid)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
 
 	bytes, err := json.Marshal(reg)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
 
 	var originalData map[string]interface{}
 	err = json.Unmarshal(bytes, &originalData)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
 
 	all, err := io.ReadAll(r.Body)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
 
 	var patchData map[string]interface{}
 	err = json.Unmarshal(all, &patchData)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
 
-	patchFeatures, err := validatePatchData(patchData, originalData)
+	patchFeatures, err, errcode := validatePatchData(patchData, originalData)
 	if err != nil {
-		return nil, err
+		return nil, err, errcode
 	}
 
 	if originalData["features"] != nil {
@@ -174,42 +174,42 @@ func patchCountryInformation(r *http.Request, registrationId, uuid string) (*str
 	// Marshal the original data back to JSON.
 	jsonData, err := json.Marshal(originalData)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
 
 	// Unmarshal the JSON data into the CountryInfoGet struct.
 	var countryInfo *structs.CountryInfoGet
 	err = json.Unmarshal(jsonData, &countryInfo)
 	if err != nil {
-		return nil, err
+		return nil, err, http.StatusInternalServerError
 	}
-	return countryInfo, nil
+	return countryInfo, nil, http.StatusOK
 }
 
-func validatePatchData(patchData map[string]interface{}, originalData map[string]interface{}) (map[string]interface{}, error) {
+func validatePatchData(patchData map[string]interface{}, originalData map[string]interface{}) (map[string]interface{}, error, int) {
 	// Check if "country" or "isoCode" fields are provided and if they are non-empty and differ from the original data.
 	if country, ok := patchData["country"]; ok {
 		if countryStr, isStr := country.(string); isStr && countryStr != "" && originalData["country"] != country {
-			return nil, errors.New("modification of 'country' field is not allowed")
+			return nil, errors.New("modification of 'country' field is not allowed"), http.StatusBadRequest
 		}
 	}
 
 	if isoCode, ok := patchData["isoCode"]; ok {
 		if isoCodeStr, isStr := isoCode.(string); isStr && isoCodeStr != "" && originalData["isoCode"] != isoCode {
-			return nil, errors.New("modification of 'isoCode' field is not allowed")
+			return nil, errors.New("modification of 'isoCode' field is not allowed"), http.StatusBadRequest
 		}
 	}
 
 	// Enforce "features" to be provided and not empty.
 	features, ok := patchData["features"]
 	if !ok || features == nil {
-		return nil, errors.New("user must provide features to patch")
+		return nil, errors.New("user must provide features to patch"), http.StatusBadRequest
 	}
 	patchFeatures, isMap := features.(map[string]interface{})
 	if !isMap || len(patchFeatures) == 0 {
-		return nil, errors.New("user must provide non-empty features to patch")
+		return nil, errors.New("user must provide non-empty features to patch"), http.StatusBadRequest
 	}
-	return patchFeatures, nil
+	return patchFeatures, nil, http.StatusOK
 }
 
 func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
@@ -233,14 +233,14 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	reg, err := db.GetSpecificRegistration(id, uuid)
 	if err != nil {
-		log.Println("Document doesn't exist: ", err)
-		http.Error(w, "", http.StatusNoContent)
+		err := fmt.Sprint("Document doesn't exist: ", err)
+		http.Error(w, err, http.StatusNotFound)
 		return
 	}
 
 	err = db.DeleteRegistration(id, uuid)
 	if err != nil {
-		err := fmt.Sprintf("Error saving patched data to database: %v", err)
+		err := fmt.Sprintf("Error deleting data from database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return
 	}
