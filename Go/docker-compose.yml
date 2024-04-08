@@ -9,4 +9,4 @@ services:
       - PORT=${PORT}
       - TOKEN=${TOKEN}
     volumes:
-      - ./.secrets:/credentials:ro
+      - ./.secrets:/root/.secrets:ro

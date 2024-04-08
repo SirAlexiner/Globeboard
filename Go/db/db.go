@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/status"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -30,19 +29,11 @@ func getFirestoreClient() (*firestore.Client, error) {
 	// Use a service account
 	ctx := context.Background()
 
-	// Set the credential path based on if it is running in Docker
-	var credentialsPath string
-	if runningInDocker() {
-		credentialsPath = constants.FirebaseCredentialsDockerPath
-	} else {
-		credentialsPath = constants.FirebaseCredentialsDefaultPath
-	}
-
 	// Using the credential file
-	sa := option.WithCredentialsFile(credentialsPath)
+	sa := option.WithCredentialsFile(constants.FirebaseCredentialPath)
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		log.Println("Credentials not found: " + credentialsPath)
+		log.Println("Credentials not found: " + constants.FirebaseCredentialPath)
 		log.Println("Error on getting the application")
 		return nil, err
 	}
@@ -51,20 +42,12 @@ func getFirestoreClient() (*firestore.Client, error) {
 	client, err := app.Firestore(ctx)
 	if err != nil {
 		// Logging the error
-		log.Println("Credentials file: '" + credentialsPath + "' lead to an error.")
+		log.Println("Credentials file: '" + constants.FirebaseCredentialPath + "' lead to an error.")
 		return nil, err
 	}
 
 	// No errors, so we return the test client and no error
 	return client, nil
-}
-
-// runningInDocker checks if the application is running inside a Docker container.
-func runningInDocker() bool {
-	if _, err := os.Stat("/.dockerenv"); err == nil {
-		return true // .dockerenv exists
-	}
-	return false // .dockerenv does not exist
 }
 
 func TestDBConnection() string {
@@ -326,7 +309,7 @@ func GetRegistrations(uuid string) ([]*structs.CountryInfoGet, error) {
 	ref := client.Collection(Firestore.RegistrationCollection)
 
 	// Query all documents
-	query := ref.Where("uuid", "==", uuid)
+	query := ref.Where("UUID", "==", uuid)
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
@@ -365,7 +348,7 @@ func GetSpecificRegistration(id, uuid string) (*structs.CountryInfoGet, error) {
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
-	query := ref.Where("id", "==", id).Where("uuid", "==", uuid).Limit(1)
+	query := ref.Where("ID", "==", id).Where("UUID", "==", uuid).Limit(1)
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
@@ -409,7 +392,7 @@ func UpdateRegistration(id, uuid string, data *structs.CountryInfoGet) error {
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
-	query := ref.Where("id", "==", id).Where("uuid", "==", uuid).Limit(1)
+	query := ref.Where("ID", "==", id).Where("UUID", "==", uuid).Limit(1)
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
@@ -452,7 +435,7 @@ func DeleteRegistration(id, uuid string) error {
 	// Use a context for Firestore operations
 	ctx := context.Background()
 
-	query := ref.Where("id", "==", id).Where("uuid", "==", uuid).Limit(1)
+	query := ref.Where("ID", "==", id).Where("UUID", "==", uuid).Limit(1)
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
