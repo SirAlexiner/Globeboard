@@ -36,6 +36,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error initializing Firebase Auth", http.StatusInternalServerError)
 		return
 	}
+	name := r.FormValue("name")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
@@ -54,6 +55,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
 	params := (&auth.UserToCreate{}).
+		DisplayName(name).
 		Email(email).
 		Password(password)
 	u, err := client.CreateUser(ctx, params)
@@ -75,9 +77,9 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = fmt.Fprintf(w, "Successfully registered user. "+
+	_, err = fmt.Fprintf(w, "Successfully registered user: %s\n"+
 		"API Key: %s \n\n"+
-		"To delete and get a new API Key utilize: Authorization: \"%v\" at:\n<a href=\"/util/v1/key\">/util/v1/key</a>", key, u.UID)
+		"To delete and get a new API Key utilize: Authorization: \"%v\" at:\n<a href=\"/util/v1/key\">/util/v1/key</a>", u.DisplayName, key, u.UID)
 	if err != nil {
 		log.Print("Error writing response to ResponseWriter: ", err)
 		http.Error(w, ISE, http.StatusInternalServerError)

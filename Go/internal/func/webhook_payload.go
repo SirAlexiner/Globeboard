@@ -25,10 +25,13 @@ func LoopSendWebhooks(caller string, ci *structs.CountryInfoGet, endpoint, event
 
 	ctx := context.Background()
 
+	// Remove UUID from webhook json
+	ci.UUID = ""
+
 	// Ignoring error as we've already confirmed the caller at the endpoint.
 	user, _ := client.GetUser(ctx, caller)
 
-	email := user.Email
+	email := user.DisplayName + " (" + strings.ToLower(user.Email) + ")"
 	title := ""
 	color := 0
 	method := ""
@@ -109,7 +112,10 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 		fmt.Println("Error marshaling request body:", err)
 		return
 	}
-	requestBodyString := fmt.Sprintf("```json\n%s\n```", requestBodyJSON)
+	// Remove the UUID field from the payload.
+	requestBodyString := string(requestBodyJSON)
+	requestBodyString = strings.Replace(requestBodyString, "  \"uuid\": \"\",\n", "", -1)
+	requestBodyString = fmt.Sprintf("```json\n%s\n```", requestBodyString)
 
 	// Define default and dynamic fields
 	fields := []structs.Field{
@@ -195,7 +201,7 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 func sendWebhookPayload(email, title string, event, endpoint, country string, payloadUrl string) {
 
 	payload := map[string]interface{}{
-		"email":     email,
+		"User":      email,
 		"title":     title,
 		"event":     event,
 		"endpoint":  endpoint,

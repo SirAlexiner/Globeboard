@@ -93,8 +93,10 @@ func validateCountryOrIsoCodeProvided(ci *structs.CountryInfoGet) error {
 
 func validateIsoCode(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.IsoCode != "" {
-		if _, exists := validCountries[ci.IsoCode]; !exists {
+		if country, exists := validCountries[ci.IsoCode]; !exists {
 			return errors.New("invalid ISO code")
+		} else {
+			ci.Country = country
 		}
 	}
 	return nil

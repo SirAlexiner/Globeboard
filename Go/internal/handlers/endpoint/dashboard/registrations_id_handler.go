@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"globeboard/db"
 	_func "globeboard/internal/func"
@@ -158,30 +159,57 @@ func patchCountryInformation(r *http.Request, registrationId, uuid string) (*str
 		return nil, err
 	}
 
-	for key, value := range patchData {
-		// If the key is for a nested object, handle it appropriately
-		if key == "features" && originalData[key] != nil {
-			// Assume both are maps, merge them
-			for subKey, subValue := range value.(map[string]interface{}) {
-				originalData[key].(map[string]interface{})[subKey] = subValue
-			}
-		} else {
-			originalData[key] = value
+	patchFeatures, err := validatePatchData(patchData, originalData)
+	if err != nil {
+		return nil, err
+	}
+
+	if originalData["features"] != nil {
+		originalFeatures := originalData["features"].(map[string]interface{})
+		for key, value := range patchFeatures {
+			originalFeatures[key] = value
 		}
 	}
 
-	// First, marshal your map into JSON
+	// Marshal the original data back to JSON.
 	jsonData, err := json.Marshal(originalData)
 	if err != nil {
 		return nil, err
 	}
 
+	// Unmarshal the JSON data into the CountryInfoGet struct.
 	var countryInfo *structs.CountryInfoGet
 	err = json.Unmarshal(jsonData, &countryInfo)
 	if err != nil {
 		return nil, err
 	}
 	return countryInfo, nil
+}
+
+func validatePatchData(patchData map[string]interface{}, originalData map[string]interface{}) (map[string]interface{}, error) {
+	// Check if "country" or "isoCode" fields are provided and if they are non-empty and differ from the original data.
+	if country, ok := patchData["country"]; ok {
+		if countryStr, isStr := country.(string); isStr && countryStr != "" && originalData["country"] != country {
+			return nil, errors.New("modification of 'country' field is not allowed")
+		}
+	}
+
+	if isoCode, ok := patchData["isoCode"]; ok {
+		if isoCodeStr, isStr := isoCode.(string); isStr && isoCodeStr != "" && originalData["isoCode"] != isoCode {
+			return nil, errors.New("modification of 'isoCode' field is not allowed")
+		}
+	}
+
+	// Enforce "features" to be provided and not empty.
+	features, ok := patchData["features"]
+	if !ok || features == nil {
+		return nil, errors.New("user must provide features to patch")
+	}
+	patchFeatures, isMap := features.(map[string]interface{})
+	if !isMap || len(patchFeatures) == 0 {
+		return nil, errors.New("user must provide non-empty features to patch")
+	}
+	return patchFeatures, nil
 }
 
 func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
