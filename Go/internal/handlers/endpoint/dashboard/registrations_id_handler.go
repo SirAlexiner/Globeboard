@@ -12,7 +12,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"time"
 )
 
 const (
@@ -36,25 +35,25 @@ func RegistrationsIdHandler(w http.ResponseWriter, r *http.Request) {
 
 // handleRegGetRequest handles GET requests to retrieve a registered country.
 func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	ID := r.PathValue("ID")
 	query := r.URL.Query()
 	token := query.Get("token")
 	if token == "" {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	uuid := db.GetAPIKeyUUID(token)
-	if uuid == "" {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if id == "" {
+	if ID == "" {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(id, uuid)
+	reg, err := db.GetSpecificRegistration(ID, UUID)
 	if err != nil {
 		log.Print("Error getting document from database: ", err)
 		http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
@@ -75,25 +74,25 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_func.LoopSendWebhooks(uuid, reg, Endpoints.RegistrationsID, Webhooks.EventInvoke)
+	_func.LoopSendWebhooks(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventInvoke)
 }
 
 // handleRegPatchRequest handles PUT requests to Update a registered country.
 func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	ID := r.PathValue("ID")
 	query := r.URL.Query()
 	token := query.Get("token")
 	if token == "" {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	uuid := db.GetAPIKeyUUID(token)
-	if uuid == "" {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if id == "" {
+	if ID == "" {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
@@ -104,7 +103,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	countryInfo, err, errcode := patchCountryInformation(r, id, uuid)
+	countryInfo, err, errcode := patchCountryInformation(r, ID, UUID)
 	if err != nil {
 		err := fmt.Sprintf("Error patching data together: %v", err)
 		http.Error(w, err, errcode)
@@ -117,9 +116,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	countryInfo.Lastchange = time.Now()
-
-	err = db.UpdateRegistration(id, uuid, countryInfo)
+	err = db.UpdateRegistration(ID, UUID, countryInfo)
 	if err != nil {
 		err := fmt.Sprintf("Error saving patched data to database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
@@ -128,11 +125,11 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 
-	_func.LoopSendWebhooks(uuid, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
+	_func.LoopSendWebhooks(UUID, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
 }
 
-func patchCountryInformation(r *http.Request, registrationId, uuid string) (*structs.CountryInfoGet, error, int) {
-	reg, err := db.GetSpecificRegistration(registrationId, uuid)
+func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoGet, error, int) {
+	reg, err := db.GetSpecificRegistration(ID, UUID)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
@@ -213,32 +210,32 @@ func validatePatchData(patchData map[string]interface{}, originalData map[string
 }
 
 func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	ID := r.PathValue("ID")
 	query := r.URL.Query()
 	token := query.Get("token")
 	if token == "" {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	uuid := db.GetAPIKeyUUID(token)
-	if uuid == "" {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if id == "" {
+	if ID == "" {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(id, uuid)
+	reg, err := db.GetSpecificRegistration(ID, UUID)
 	if err != nil {
 		err := fmt.Sprint("Document doesn't exist: ", err)
 		http.Error(w, err, http.StatusNotFound)
 		return
 	}
 
-	err = db.DeleteRegistration(id, uuid)
+	err = db.DeleteRegistration(ID, UUID)
 	if err != nil {
 		err := fmt.Sprintf("Error deleting data from database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
@@ -247,5 +244,5 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
-	_func.LoopSendWebhooks(uuid, reg, Endpoints.RegistrationsID, Webhooks.EventDelete)
+	_func.LoopSendWebhooks(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventDelete)
 }

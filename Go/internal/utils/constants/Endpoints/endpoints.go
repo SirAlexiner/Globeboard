@@ -9,10 +9,10 @@ import (
 const (
 	ApiKey           = Paths.Util + constants.APIVersion + "/key"
 	UserRegistration = Paths.Util + constants.APIVersion + "/register"
-	RegistrationsID  = Paths.Dashboard + constants.APIVersion + "/registrations/{id}"
+	RegistrationsID  = Paths.Dashboard + constants.APIVersion + "/registrations/{ID}"
 	Registrations    = Paths.Dashboard + constants.APIVersion + "/registrations"
-	Dashboards       = Paths.Dashboard + constants.APIVersion + "/dashboards/{id}"
-	NotificationsID  = Paths.Dashboard + constants.APIVersion + "/notifications/{id}"
+	Dashboards       = Paths.Dashboard + constants.APIVersion + "/dashboards/{ID}"
+	NotificationsID  = Paths.Dashboard + constants.APIVersion + "/notifications/{ID}"
 	Notifications    = Paths.Dashboard + constants.APIVersion + "/notifications"
 	Status           = Paths.Dashboard + constants.APIVersion + "/status"
 )

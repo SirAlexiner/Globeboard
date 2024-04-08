@@ -60,14 +60,14 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please provide API Token", http.StatusBadRequest)
 		return
 	}
-	uuid := db.GetAPIKeyUUID(token)
-	if uuid == "" {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf("API key not accepted")
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 
-	user, err := db.GetWebhooksUser(uuid)
+	user, err := db.GetWebhooksUser(UUID)
 	if err != nil {
 		log.Print("Error retrieving users webhooks:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

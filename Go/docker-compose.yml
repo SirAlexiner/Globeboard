@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   globeboard:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - '${PORT}:${PORT}'
     environment:
@@ -10,3 +12,9 @@ services:
       - TOKEN=${TOKEN}
     volumes:
       - ./.secrets:/root/.secrets:ro
+  globeboard-test:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    depends_on:
+      - globeboard

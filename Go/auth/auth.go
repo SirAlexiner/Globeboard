@@ -9,10 +9,12 @@ import (
 	"log"
 )
 
-func GetFireBaseAuthClient() (*auth.Client, error) {
-	// Use a service account
-	ctx := context.Background()
+var (
+	// Use a context for Firebase operations
+	ctx = context.Background()
+)
 
+func GetFireBaseAuthClient() (*auth.Client, error) {
 	// Using the credential file
 	sa := option.WithCredentialsFile(constants.FirebaseCredentialPath)
 	app, err := firebase.NewApp(ctx, nil, sa)

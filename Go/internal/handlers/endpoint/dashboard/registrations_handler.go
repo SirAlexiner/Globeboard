@@ -11,8 +11,8 @@ import (
 	"globeboard/internal/utils/constants/Webhooks"
 	"globeboard/internal/utils/structs"
 	"io"
+	"log"
 	"net/http"
-	"time"
 )
 
 const (
@@ -57,8 +57,8 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	uuid := db.GetAPIKeyUUID(token)
-	if uuid == "" {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
@@ -81,11 +81,8 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	UDID := _func.GenerateUID(constants.DocIdLength)
 	URID := _func.GenerateUID(constants.RegIdLength)
 
-	lastchange := time.Now()
-
 	ci.ID = URID
-	ci.UUID = uuid
-	ci.Lastchange = lastchange
+	ci.UUID = UUID
 
 	err = db.AddRegistration(UDID, ci)
 	if err != nil {
@@ -93,9 +90,16 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	reg, err := db.GetSpecificRegistration(URID, UUID)
+	if err != nil {
+		log.Print("Error getting document from database: ", err)
+		http.Error(w, "Error confirming data added to database", http.StatusInternalServerError)
+		return
+	}
+
 	response := map[string]interface{}{
-		"id":         URID,
-		"lastChange": lastchange,
+		"id":         reg.ID,
+		"lastChange": reg.Lastchange,
 	}
 
 	// Set Content-Type header
@@ -112,7 +116,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_func.LoopSendWebhooks(uuid, ci, Endpoints.Registrations, Webhooks.EventRegister)
+	_func.LoopSendWebhooks(UUID, ci, Endpoints.Registrations, Webhooks.EventRegister)
 }
 
 // handleRegGetAllRequest handles GET requests to retrieve a registered country.
@@ -123,13 +127,13 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	uuid := db.GetAPIKeyUUID(token)
-	if uuid == "" {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	regs, err := db.GetRegistrations(uuid)
+	regs, err := db.GetRegistrations(UUID)
 	if err != nil {
 		errmsg := fmt.Sprint("Error retrieving document from database: ", err)
 		http.Error(w, errmsg, http.StatusInternalServerError)
@@ -151,6 +155,6 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, reg := range regs {
-		_func.LoopSendWebhooks(uuid, reg, Endpoints.Registrations, Webhooks.EventInvoke)
+		_func.LoopSendWebhooks(UUID, reg, Endpoints.Registrations, Webhooks.EventInvoke)
 	}
 }

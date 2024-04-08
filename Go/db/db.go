@@ -25,9 +25,12 @@ const (
 	ParsingError       = "Error parsing document: %v\n"
 )
 
+var (
+	// Use a context for Firestore operations
+	ctx = context.Background()
+)
+
 func getFirestoreClient() (*firestore.Client, error) {
-	// Use a service account
-	ctx := context.Background()
 
 	// Using the credential file
 	sa := option.WithCredentialsFile(constants.FirebaseCredentialPath)
@@ -60,8 +63,6 @@ func TestDBConnection() string {
 			log.Printf("Error closing Firestore client: %v", err)
 		}
 	}()
-
-	ctx := context.Background()
 
 	collectionID := "Connectivity"
 	documentID := "DB_Connection_Test"
@@ -120,11 +121,7 @@ func AddApiKey(docID, UUID string, key string) error {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.ApiKeyCollection)
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
-	query := ref.Where("UUID", "==", UUID).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	for {
@@ -171,11 +168,7 @@ func DeleteApiKey(apiKey string) error {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.ApiKeyCollection)
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
-	query := ref.Where("APIKey", "==", apiKey).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("APIKey", "==", apiKey).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var docID string
@@ -222,12 +215,8 @@ func GetAPIKeyUUID(apiKey string) string {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.ApiKeyCollection)
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Query Firestore to check if the API key exists
-	query := ref.Where("APIKey", "==", apiKey).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("APIKey", "==", apiKey).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var key structs.APIKey
@@ -278,11 +267,15 @@ func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Create a new document and add to it
-	_, err = ref.Doc(docID).Set(ctx, data)
+	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
+		"ID":         data.ID,
+		"UUID":       data.UUID,
+		"Country":    data.Country,
+		"IsoCode":    data.IsoCode,
+		"Features":   data.Features,
+		"Lastchange": firestore.ServerTimestamp,
+	})
 	if err != nil {
 		log.Println("Error saving data to database" + err.Error())
 		return err
@@ -291,7 +284,7 @@ func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 	return nil
 }
 
-func GetRegistrations(uuid string) ([]*structs.CountryInfoGet, error) {
+func GetRegistrations(UUID string) ([]*structs.CountryInfoGet, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
@@ -302,27 +295,27 @@ func GetRegistrations(uuid string) ([]*structs.CountryInfoGet, error) {
 		}
 	}()
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
 	// Query all documents
-	query := ref.Where("UUID", "==", uuid)
-	iter := query.Documents(ctx)
+	iter := ref.Where("UUID", "==", UUID).OrderBy("Lastchange", firestore.Desc).Documents(ctx)
 	defer iter.Stop()
 
 	var cis []*structs.CountryInfoGet
 
 	for {
 		doc, err := iter.Next()
-		var ci *structs.CountryInfoGet
 		if errors.Is(err, iterator.Done) {
 			break
 		}
-		if err := doc.DataTo(&ci); err != nil {
-			log.Printf(ParsingError, err)
+		if err != nil {
+			log.Printf("Error fetching document: %v", err)
+			return nil, err
+		}
+		ci := new(structs.CountryInfoGet) // Allocate a new instance of CountryInfoGet
+		if err := doc.DataTo(ci); err != nil {
+			log.Printf("Parsing error: %v", err)
 			return nil, err
 		}
 		cis = append(cis, ci)
@@ -331,7 +324,7 @@ func GetRegistrations(uuid string) ([]*structs.CountryInfoGet, error) {
 	return cis, nil
 }
 
-func GetSpecificRegistration(id, uuid string) (*structs.CountryInfoGet, error) {
+func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoGet, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
@@ -342,14 +335,10 @@ func GetSpecificRegistration(id, uuid string) (*structs.CountryInfoGet, error) {
 		}
 	}()
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
-	query := ref.Where("ID", "==", id).Where("UUID", "==", uuid).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var ci *structs.CountryInfoGet
@@ -372,10 +361,10 @@ func GetSpecificRegistration(id, uuid string) (*structs.CountryInfoGet, error) {
 		return ci, nil
 	}
 
-	return nil, errors.New("no document with that id was found")
+	return nil, errors.New("no document with that ID was found")
 }
 
-func UpdateRegistration(id, uuid string, data *structs.CountryInfoGet) error {
+func UpdateRegistration(ID, UUID string, data *structs.CountryInfoGet) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -386,14 +375,10 @@ func UpdateRegistration(id, uuid string, data *structs.CountryInfoGet) error {
 		}
 	}()
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
-	query := ref.Where("ID", "==", id).Where("UUID", "==", uuid).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	// Iterate over the query results
@@ -405,7 +390,14 @@ func UpdateRegistration(id, uuid string, data *structs.CountryInfoGet) error {
 		if err != nil {
 			return fmt.Errorf(IterationFailed, err)
 		}
-		_, err = ref.Doc(doc.Ref.ID).Set(ctx, data)
+		_, err = ref.Doc(doc.Ref.ID).Set(ctx, map[string]interface{}{
+			"ID":         data.ID,
+			"UUID":       data.UUID,
+			"Country":    data.Country,
+			"IsoCode":    data.IsoCode,
+			"Features":   data.Features,
+			"Lastchange": firestore.ServerTimestamp,
+		})
 		if err != nil {
 			log.Printf("Error saving data to database: %v\n", err)
 			return err
@@ -413,10 +405,10 @@ func UpdateRegistration(id, uuid string, data *structs.CountryInfoGet) error {
 		return nil
 	}
 
-	return errors.New("no document with that id was found")
+	return errors.New("no document with that ID was found")
 }
 
-func DeleteRegistration(id, uuid string) error {
+func DeleteRegistration(ID, UUID string) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -432,11 +424,7 @@ func DeleteRegistration(id, uuid string) error {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
-	query := ref.Where("ID", "==", id).Where("UUID", "==", uuid).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var docID string
@@ -483,9 +471,6 @@ func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Create a new document and add it to the
 	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
 		"id":         userID,
@@ -513,9 +498,6 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 		}
 	}()
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
 
@@ -542,7 +524,7 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	return webhooks, nil
 }
 
-func GetWebhooksUser(uuid string) ([]structs.WebhookGet, error) {
+func GetWebhooksUser(UUID string) ([]structs.WebhookGet, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
@@ -553,14 +535,10 @@ func GetWebhooksUser(uuid string) ([]structs.WebhookGet, error) {
 		}
 	}()
 
-	// Use a context for Firestore operations
-	ctx := context.Background()
-
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
 
-	query := ref.Where("uuid", "==", uuid).Limit(1)
-	iter := query.Documents(ctx)
+	iter := ref.Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var webhooks []structs.WebhookGet

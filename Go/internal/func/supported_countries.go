@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"globeboard/internal/utils/constants/External"
 	"globeboard/internal/utils/structs"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -93,6 +96,7 @@ func validateCountryOrIsoCodeProvided(ci *structs.CountryInfoGet) error {
 
 func validateIsoCode(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.IsoCode != "" {
+		ci.IsoCode = strings.ToTitle(ci.IsoCode)
 		if country, exists := validCountries[ci.IsoCode]; !exists {
 			return errors.New("invalid ISO code")
 		} else {
@@ -104,6 +108,7 @@ func validateIsoCode(ci *structs.CountryInfoGet, validCountries map[string]strin
 
 func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.IsoCode == "" && ci.Country != "" {
+		ci.Country = cases.Title(language.English, cases.Compact).String(ci.Country)
 		for code, name := range validCountries {
 			if name == ci.Country {
 				ci.IsoCode = code
@@ -117,6 +122,7 @@ func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoGet, validCountri
 
 func validateCorrespondence(ci *structs.CountryInfoGet, validCountries map[string]string) error {
 	if ci.Country != "" && ci.IsoCode != "" {
+		ci.Country = cases.Title(language.English, cases.Compact).String(ci.Country)
 		if validCountries[ci.IsoCode] != ci.Country {
 			return errors.New("ISO code and country name do not match")
 		}
