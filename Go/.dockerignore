@@ -91,3 +91,6 @@ Thumbs.db
 **/firebasecredentials.json
 **/.secrets
 .env
+
+# Ignore markdown files
+*.md

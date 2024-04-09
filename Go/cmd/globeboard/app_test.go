@@ -570,7 +570,7 @@ func TestStatusMethodNotAllowed(t *testing.T) {
 // TestSupportedLanguagesGetNoKey confirms that the Supported Languages Endpoint returns Status Bad Requests for GET Method without API token.
 func TestSupportedLanguagesGetNoKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Registrations, nil)
+	req, err := http.NewRequest("GET", Endpoints.RegistrationsID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -592,7 +592,7 @@ func TestSupportedLanguagesGetNoKey(t *testing.T) {
 // TestSupportedLanguagesGet confirms that the Supported Languages Endpoint returns Status OK for GET Method.
 func TestSupportedLanguagesGet(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Registrations+"?token="+token+"", nil)
+	req, err := http.NewRequest("GET", Endpoints.RegistrationsID+"?token="+token+"", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -614,7 +614,7 @@ func TestSupportedLanguagesGet(t *testing.T) {
 // TestSupportedLanguagesGetWrongKey confirms that the Supported Languages Endpoint returns Status Not Accepted for GET Method with incorrect token.
 func TestSupportedLanguagesGetWrongKey(t *testing.T) {
 	// Create a request to your endpoint with the GET method
-	req, err := http.NewRequest("GET", Endpoints.Registrations+"?token=c35c5742", nil)
+	req, err := http.NewRequest("GET", Endpoints.RegistrationsID+"?token=c35c5742", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -636,7 +636,7 @@ func TestSupportedLanguagesGetWrongKey(t *testing.T) {
 // TestSupportedLanguagesMethodNotAllowed confirms that the Supported Languages Endpoint returns Status Not Implemented for Methods other than GET.
 func TestSupportedLanguagesMethodNotAllowed(t *testing.T) {
 	// Create a request to your endpoint with a method other than GET
-	req, err := http.NewRequest("POST", Endpoints.Registrations, nil)
+	req, err := http.NewRequest("POST", Endpoints.RegistrationsID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -654,7 +654,7 @@ func TestSupportedLanguagesMethodNotAllowed(t *testing.T) {
 			status, http.StatusNotImplemented)
 	}
 
-	req, err = http.NewRequest("PUT", Endpoints.Registrations, nil)
+	req, err = http.NewRequest("PUT", Endpoints.RegistrationsID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

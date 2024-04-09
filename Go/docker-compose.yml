@@ -2,10 +2,19 @@ version: '3.8'
 
 services:
   globeboard:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "${PORT}:${PORT}"
-    env_file:
-      - .env
+      - '${PORT}:${PORT}'
+    environment:
+      - PORT=${PORT}
+      - TOKEN=${TOKEN}
     volumes:
-      - ./db/firebaseCredentials.json:/root/firebaseCredentials.json
+      - ./.secrets:/root/.secrets:ro
+  globeboard-test:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    depends_on:
+      - globeboard

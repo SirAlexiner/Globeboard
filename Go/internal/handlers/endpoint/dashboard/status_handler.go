@@ -10,7 +10,6 @@ import (
 	"globeboard/internal/utils/structs"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -49,7 +48,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 		handleStatusGetRequest(w, r)
 	default:
 		// If the method is not supported, return an error response.
-		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported method for this endpoint is: "+http.MethodGet, http.StatusNotImplemented)
+		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is: "+http.MethodGet, http.StatusNotImplemented)
 		return
 	}
 }
@@ -61,27 +60,28 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please provide API Token", http.StatusBadRequest)
 		return
 	}
-	exists, err := db.DoesAPIKeyExists(token)
-	if err != nil {
-		err := fmt.Sprintf("Error checking API key: %v", err)
-		http.Error(w, err, http.StatusInternalServerError)
-		return
-	}
-
-	if !exists {
+	UUID := db.GetAPIKeyUUID(token)
+	if UUID == "" {
 		err := fmt.Sprintf("API key not accepted")
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
+
+	user, err := db.GetWebhooksUser(UUID)
+	if err != nil {
+		log.Print("Error retrieving users webhooks:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	// Initialize a status response.
 	status := structs.StatusResponse{
-		CountriesApi:   getEndpointStatus(External.CountriesAPI + "all"),
-		MeteoApi:       getEndpointStatus(External.OpenMeteoAPI),
-		CurrencyApi:    getEndpointStatus(External.CurrencyAPI + "nok"),
-		FirebaseDB:     db.TestDBConnection(),
-		NotificationDb: strconv.Itoa(http.StatusNotImplemented) + " Not Implemented", // TODO::Update with Notification DB
-		Webhooks:       0,                                                            //TODO::Get Actual number of webhooks
-		Version:        constants.APIVersion,
+		CountriesApi: getEndpointStatus(External.CountriesAPI + "all"),
+		MeteoApi:     getEndpointStatus(External.OpenMeteoAPI),
+		CurrencyApi:  getEndpointStatus(External.CurrencyAPI + "nok"),
+		FirebaseDB:   db.TestDBConnection(),
+		Webhooks:     len(user),
+		Version:      constants.APIVersion,
 		// Calculate uptime since the last restart of the service.
 		UptimeInSeconds: fmt.Sprintf("%f Seconds", time.Since(startTime).Seconds()),
 	}
