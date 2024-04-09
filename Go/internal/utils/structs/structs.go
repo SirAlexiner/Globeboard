@@ -16,3 +16,20 @@ type StatusResponse struct {
 	Version         string `json:"version"`
 	UptimeInSeconds string `json:"uptime"`
 }
+
+type Registration struct {
+	Url     string `json:"url"`
+	Country string `json:"country"`
+	Event   string `json:"event"`
+}
+
+type RegistrationResponse struct {
+	ID string `json:"id"`
+}
+
+type Webhook struct {
+	ID      string `json:"id"`
+	Url     string `json:"url"`
+	Country string `json:"country"`
+	Event   string `json:"event"`
+}
