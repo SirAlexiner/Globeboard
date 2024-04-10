@@ -69,9 +69,10 @@ type StatusResponse struct {
 
 // Webhooks Structs
 
-type WebhookPost struct {
+type WebhookResponse struct {
+	ID      string   `json:"id"`
 	URL     string   `json:"url"`
-	Country string   `json:"country"`
+	Country string   `json:"country,omitempty"`
 	Event   []string `json:"event"`
 }
 

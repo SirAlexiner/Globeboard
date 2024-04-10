@@ -23,7 +23,7 @@ func DashboardsHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		handleDashboardGetRequest(w, r)
 	default:
-		http.Error(w, "REST Method: "+r.Method+" not supported. Currently only"+http.MethodGet+" methods are supported.", http.StatusNotImplemented)
+		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodGet, http.StatusNotImplemented)
 		return
 	}
 }

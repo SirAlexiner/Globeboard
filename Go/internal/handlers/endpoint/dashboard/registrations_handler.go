@@ -79,7 +79,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	UDID := _func.GenerateUID(constants.DocIdLength)
-	URID := _func.GenerateUID(constants.RegIdLength)
+	URID := _func.GenerateUID(constants.IdLength)
 
 	ci.ID = URID
 	ci.UUID = UUID

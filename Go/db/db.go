@@ -132,7 +132,7 @@ func AddApiKey(docID, UUID string, key string) error {
 			return fmt.Errorf(IterationFailed, err)
 		}
 		_ = doc
-		err = fmt.Errorf("API key is already registered to user")
+		err = errors.New("API key is already registered to user")
 		return err
 	}
 
@@ -184,16 +184,16 @@ func DeleteApiKey(apiKey string) error {
 
 	// If docID is empty, the API key does not exist in Firestore
 	if docID == "" {
-		return fmt.Errorf("API key not found")
+		return errors.New("API key not found")
 	}
 
 	// Delete the document with the provided API key
 	_, err = ref.Doc(docID).Delete(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to delete document: %v", err)
+		return fmt.Errorf("failed to delete API Key: %v", err)
 	}
 
-	fmt.Printf("API key %s deleted successfully\n", apiKey)
+	log.Printf("API key %s deleted successfully\n", apiKey)
 	return nil
 }
 
@@ -297,23 +297,18 @@ func GetRegistrations(UUID string) ([]*structs.CountryInfoGet, error) {
 	ref := client.Collection(Firestore.RegistrationCollection)
 
 	// Query all documents
-	iter := ref.Where("UUID", "==", UUID).OrderBy("Lastchange", firestore.Desc).Documents(ctx)
-	defer iter.Stop()
+	docs, _ := ref.Where("UUID", "==", UUID).OrderBy("Lastchange", firestore.Desc).Documents(ctx).GetAll()
+	if err != nil {
+		log.Printf("Error fetching Registration: %v\n", err)
+		return nil, err
+	}
 
 	var cis []*structs.CountryInfoGet
 
-	for {
-		doc, err := iter.Next()
-		if errors.Is(err, iterator.Done) {
-			break
-		}
-		if err != nil {
-			log.Printf("Error fetching document: %v", err)
-			return nil, err
-		}
-		ci := new(structs.CountryInfoGet) // Allocate a new instance of CountryInfoGet
-		if err := doc.DataTo(ci); err != nil {
-			log.Printf("Parsing error: %v", err)
+	for _, doc := range docs {
+		var ci *structs.CountryInfoGet
+		if err := doc.DataTo(&ci); err != nil {
+			log.Printf(ParsingError, err)
 			return nil, err
 		}
 		cis = append(cis, ci)
@@ -352,14 +347,12 @@ func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoGet, error) {
 		}
 		if err := doc.DataTo(&ci); err != nil {
 			log.Println("Error retrieving document:", err)
-			// Optionally, continue to the next document instead of returning an error
-			// continue
 			return nil, err
 		}
 		return ci, nil
 	}
 
-	return nil, errors.New("no document with that ID was found")
+	return nil, errors.New("no registration with that ID was found")
 }
 
 func UpdateRegistration(ID, UUID string, data *structs.CountryInfoGet) error {
@@ -403,7 +396,7 @@ func UpdateRegistration(ID, UUID string, data *structs.CountryInfoGet) error {
 		return nil
 	}
 
-	return errors.New("no document with that ID was found")
+	return errors.New("no registration  with that ID was found")
 }
 
 func DeleteRegistration(ID, UUID string) error {
@@ -439,7 +432,7 @@ func DeleteRegistration(ID, UUID string) error {
 
 	// If docID is empty, the API key does not exist in Firestore
 	if docID == "" {
-		return fmt.Errorf("ID match was not found")
+		return errors.New("ID match was not found")
 	}
 
 	// Delete the document with the provided API key
@@ -448,12 +441,11 @@ func DeleteRegistration(ID, UUID string) error {
 		return fmt.Errorf("failed to delete document: %v", err)
 	}
 
-	fmt.Printf("Registration document %s deleted successfully\n", docID)
+	log.Printf("Registration document %s deleted successfully\n", docID)
 	return nil
 }
 
-/*
-func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
+func AddWebhook(docID string, webhook *structs.WebhookGet) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -470,20 +462,14 @@ func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
 	ref := client.Collection(Firestore.WebhookCollection)
 
 	// Create a new document and add it to the
-	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
-		"id":         userID,
-	    "url": 		  webhook.URL,
-   		"country":    webhook.Country,
-   		"event":      webhook.Event,
-		"lastChange": firestore.ServerTimestamp
-	})
+	_, err = ref.Doc(docID).Set(ctx, webhook)
 	if err != nil {
 		log.Printf(FirebaseClosingErr, err)
 		return err
 	}
 
 	return nil
-}*/
+}
 
 func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	client, err := getFirestoreClient()
@@ -502,7 +488,7 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	// Query all documents
 	docs, err := ref.Documents(ctx).GetAll()
 	if err != nil {
-		log.Printf("Error fetching documents: %v\n", err)
+		log.Printf("Error fetching all stored Webhooks: %v\n", err)
 		return nil, err
 	}
 
@@ -512,8 +498,6 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 		var webhook structs.WebhookGet
 		if err := doc.DataTo(&webhook); err != nil {
 			log.Printf(ParsingError, err)
-			// Optionally, continue to the next document instead of returning an error
-			// continue
 			return nil, err
 		}
 		webhooks = append(webhooks, webhook)
@@ -522,7 +506,7 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	return webhooks, nil
 }
 
-func GetWebhooksUser(UUID string) ([]structs.WebhookGet, error) {
+func GetWebhooksUser(UUID string) ([]structs.WebhookResponse, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
@@ -536,10 +520,45 @@ func GetWebhooksUser(UUID string) ([]structs.WebhookGet, error) {
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
 
-	iter := ref.Where("UUID", "==", UUID).Limit(1).Documents(ctx)
+	// Query all documents
+	docs, err := ref.Where("UUID", "==", UUID).Documents(ctx).GetAll()
+	if err != nil {
+		log.Printf("Error fetching users webhooks: %v\n", err)
+		return nil, err
+	}
+
+	var webhooks []structs.WebhookResponse
+
+	for _, doc := range docs {
+		var webhook structs.WebhookResponse
+		if err := doc.DataTo(&webhook); err != nil {
+			log.Printf(ParsingError, err)
+			return nil, err
+		}
+		webhooks = append(webhooks, webhook)
+	}
+
+	return webhooks, nil
+}
+
+func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			log.Printf(FirebaseClosingErr, err)
+		}
+	}()
+
+	// Reference to the Firestore collection
+	ref := client.Collection(Firestore.WebhookCollection)
+
+	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
-	var webhooks []structs.WebhookGet
+	var webhook *structs.WebhookResponse
 
 	// Iterate over the query results
 	for {
@@ -550,13 +569,58 @@ func GetWebhooksUser(UUID string) ([]structs.WebhookGet, error) {
 		if err != nil {
 			return nil, fmt.Errorf(IterationFailed, err)
 		}
-		var webhook structs.WebhookGet
 		if err := doc.DataTo(&webhook); err != nil {
-			log.Printf(ParsingError, err)
+			log.Println("Error retrieving document:", err)
 			return nil, err
 		}
-		webhooks = append(webhooks, webhook)
+		return webhook, nil
 	}
 
-	return webhooks, nil
+	return nil, errors.New("no document with that ID was found")
+}
+
+func DeleteWebhook(ID, UUID string) error {
+	client, err := getFirestoreClient()
+	if err != nil {
+		return err
+	}
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Printf(FirebaseClosingErr, err)
+			return
+		}
+	}(client)
+
+	// Create a reference to the Firestore collection
+	ref := client.Collection(Firestore.WebhookCollection)
+
+	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
+	defer iter.Stop()
+
+	var docID string
+	for {
+		doc, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf(IterationFailed, err)
+		}
+		docID = doc.Ref.ID
+	}
+
+	// If docID is empty, the API key does not exist in Firestore
+	if docID == "" {
+		return fmt.Errorf("ID match was not found")
+	}
+
+	// Delete the document with the provided API key
+	_, err = ref.Doc(docID).Delete(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to delete document: %v", err)
+	}
+
+	log.Printf("Webhook %s deleted successfully\n\n", docID)
+	return nil
 }

@@ -7,5 +7,5 @@ const (
 	FirebaseCredentialPath = "./.secrets/firebaseCredentials.json"
 	ApiKeyLength           = 20
 	DocIdLength            = 24
-	RegIdLength            = 16
+	IdLength               = 16
 )
