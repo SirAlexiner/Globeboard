@@ -2,6 +2,7 @@ package _func
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"globeboard/internal/utils/constants/External"
 	"globeboard/internal/utils/structs"
@@ -283,5 +284,5 @@ func getExchangeRateList(isocode string) (map[string]float64, error) {
 		return rates, nil
 	}
 
-	return nil, fmt.Errorf("no currency currency found")
+	return nil, errors.New("no currency currency found")
 }

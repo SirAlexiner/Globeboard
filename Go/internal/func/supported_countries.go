@@ -13,13 +13,7 @@ import (
 	"time"
 )
 
-// CountryInfo represents the necessary information about a country, focusing on its common name and cca2 code.
-type CountryInfo struct {
-	CommonName string `json:"commonName"`
-	ISOCode    string `json:"isoCode"`
-}
-
-// GetSupportedCountries fetches countries with their common names and cca2 codes.
+// getSupportedCountries fetches countries with their common names and cca2 codes.
 func getSupportedCountries() (map[string]string, error) {
 	url := fmt.Sprintf("%sall?fields=name,cca2", External.CountriesAPI)
 	var responseData []struct {
@@ -32,18 +26,18 @@ func getSupportedCountries() (map[string]string, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating request: %s", err)
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 	req.Header.Add("content-type", "application/json")
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error issuing request: %s", err)
+		return nil, fmt.Errorf("error issuing request: %v", err)
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&responseData)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding JSON: %s", err)
+		return nil, fmt.Errorf("error decoding JSON: %v", err)
 	}
 
 	countriesMap := make(map[string]string)

@@ -19,7 +19,7 @@ func getEndpointStatus(endpointURL string) string {
 	r, err := http.NewRequest(http.MethodGet, endpointURL, nil)
 	if err != nil {
 		// Log and handle the error if request creation fails.
-		err := fmt.Errorf("error in creating request: %s", err.Error())
+		err := fmt.Errorf("error in creating request: %v", err)
 		log.Println(err)
 	}
 
@@ -34,7 +34,7 @@ func getEndpointStatus(endpointURL string) string {
 	res, err := client.Do(r)
 	if err != nil {
 		// Log and handle the error if request execution fails.
-		err := fmt.Errorf("error in response: %s", err.Error())
+		err := fmt.Errorf("error in response: %v", err)
 		log.Println(err)
 	}
 
