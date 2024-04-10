@@ -62,7 +62,7 @@ This endpoint enables users to query the Gutendex library and retrieve relevant 
 ### Status
 - **Endpoint**: `/librarystats/v1/status/`
 - **Method**: GET
-- **Description**: This endpoint returns the current status of the Gutendex library, providing information about the uptime, version number, and the status of the APIs Gutendex is communicating with. Users can utilize this endpoint to monitor the availability and operational status of the Gutendex service.
+- **Description**: This endpoint returns the current status of the Gutendex library, providing information about the uptime, version number, and the status of the APIs Gutendex is communicating with. Users can use this endpoint to monitor the availability and operational status of the Gutendex service.
 
 These endpoints enable users to interact with the Gutendex REST API, accessing various functionalities and retrieving relevant data.
 

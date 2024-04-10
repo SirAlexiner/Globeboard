@@ -24,6 +24,6 @@ By contributing to this project, you agree that your contributions will be licen
 
 
 # Agreement
-By agreeing to this document you agree that you will not distribute, sell, or capitalize on the project.
+By agreeing to this document, you agree that you will not distribute, sell, or capitalize on the project.
 By contributing to the project you automatically agree to this document,
 breach of this document will be handled per `Consequences of Unacceptable Behavior` as listed in [`conduct.md`](conduct.md)
