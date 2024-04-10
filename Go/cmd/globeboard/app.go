@@ -43,7 +43,7 @@ func main() {
 	mux.HandleFunc(Endpoints.RegistrationsID, dashboard.RegistrationsIdHandler)
 	mux.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
 	mux.HandleFunc(Endpoints.Dashboards, dashboard.DashboardsHandler)
-	mux.HandleFunc(Endpoints.NotificationsID, dashboard.NotificationsHandler)
+	mux.HandleFunc(Endpoints.NotificationsID, dashboard.NotificationsIdHandler)
 	mux.HandleFunc(Endpoints.Notifications, dashboard.NotificationsHandler)
 	mux.HandleFunc(Endpoints.Status, dashboard.StatusHandler)
 
