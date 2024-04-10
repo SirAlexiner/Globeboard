@@ -86,6 +86,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 
 	err = db.AddRegistration(UDID, ci)
 	if err != nil {
+		log.Println("Error saving data to database" + err.Error())
 		http.Error(w, "Error storing data in database", http.StatusInternalServerError)
 		return
 	}
@@ -116,7 +117,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_func.LoopSendWebhooks(UUID, ci, Endpoints.Registrations, Webhooks.EventRegister)
+	_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventRegister)
 }
 
 // handleRegGetAllRequest handles GET requests to retrieve a registered country.
@@ -155,6 +156,6 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, reg := range regs {
-		_func.LoopSendWebhooks(UUID, reg, Endpoints.Registrations, Webhooks.EventInvoke)
+		_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventInvoke)
 	}
 }

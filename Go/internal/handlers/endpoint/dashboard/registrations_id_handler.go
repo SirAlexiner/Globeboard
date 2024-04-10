@@ -74,7 +74,7 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_func.LoopSendWebhooks(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventInvoke)
+	_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventInvoke)
 }
 
 // handleRegPatchRequest handles PUT requests to Update a registered country.
@@ -125,7 +125,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 
-	_func.LoopSendWebhooks(UUID, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
+	_func.LoopSendWebhooksRegistrations(UUID, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
 }
 
 func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoGet, error, int) {
@@ -244,5 +244,5 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
-	_func.LoopSendWebhooks(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventDelete)
+	_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventDelete)
 }

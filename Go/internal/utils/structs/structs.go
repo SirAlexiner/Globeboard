@@ -29,6 +29,33 @@ type Features struct {
 	TargetCurrencies []string `json:"targetCurrencies"`
 }
 
+// Dashboard Structs
+
+type DashboardResponse struct {
+	ID            string            `json:"id"`
+	Country       string            `json:"country"`
+	IsoCode       string            `json:"iso_code"`
+	Features      FeaturesDashboard `json:"features"`
+	LastRetrieval string            `json:"lastRetrieval"`
+}
+
+type FeaturesDashboard struct {
+	Temperature      string               `json:"temperature"`
+	Precipitation    string               `json:"precipitation"`
+	Capital          string               `json:"capital"`
+	Coordinates      CoordinatesDashboard `json:"coordinates"`
+	Population       int                  `json:"population"`
+	Area             string               `json:"area"`
+	TargetCurrencies map[string]float64   `json:"targetCurrencies"`
+}
+
+type CoordinatesDashboard struct {
+	Latitude  string `json:"latitude"`
+	Longitude string `json:"longitude"`
+}
+
+// Status structs
+
 // StatusResponse represents the status response structure.
 type StatusResponse struct {
 	CountriesApi    string `json:"countries_api"`

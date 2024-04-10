@@ -76,7 +76,7 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 
 	// Initialize a status response.
 	status := structs.StatusResponse{
-		CountriesApi: getEndpointStatus(External.CountriesAPI + "all"),
+		CountriesApi: getEndpointStatus(External.CountriesAPI + "no"),
 		MeteoApi:     getEndpointStatus(External.OpenMeteoAPI),
 		CurrencyApi:  getEndpointStatus(External.CurrencyAPI + "nok"),
 		FirebaseDB:   db.TestDBConnection(),

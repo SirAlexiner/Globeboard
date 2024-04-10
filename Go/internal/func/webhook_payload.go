@@ -7,6 +7,7 @@ import (
 	"fmt"
 	authenticate "globeboard/auth"
 	"globeboard/db"
+	"globeboard/internal/utils/constants/Endpoints"
 	"globeboard/internal/utils/constants/Webhooks"
 	"globeboard/internal/utils/structs"
 	"io"
@@ -16,7 +17,14 @@ import (
 	"time"
 )
 
-func LoopSendWebhooks(caller string, ci *structs.CountryInfoGet, endpoint, eventAction string) {
+var (
+	isocode = ""
+	title   = ""
+	color   = 0
+	method  = ""
+)
+
+func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoGet, endpoint, eventAction string) {
 	client, err := authenticate.GetFireBaseAuthClient()
 	if err != nil {
 		log.Printf("Error initializing Firebase Auth: %v", err)
@@ -32,9 +40,6 @@ func LoopSendWebhooks(caller string, ci *structs.CountryInfoGet, endpoint, event
 	user, _ := client.GetUser(ctx, caller)
 
 	email := user.DisplayName + " (" + strings.ToLower(user.Email) + ")"
-	title := ""
-	color := 0
-	method := ""
 
 	switch eventAction {
 	case Webhooks.EventRegister:
@@ -53,8 +58,10 @@ func LoopSendWebhooks(caller string, ci *structs.CountryInfoGet, endpoint, event
 		title = Webhooks.GETTitle
 		color = Webhooks.GETColor
 		method = http.MethodGet
-
 	}
+
+	isocode = ci.IsoCode
+
 	webhooks, err := db.GetAllWebhooks()
 	if err != nil {
 		log.Printf("Error retriving webhooks from database: %v", err)
@@ -62,7 +69,7 @@ func LoopSendWebhooks(caller string, ci *structs.CountryInfoGet, endpoint, event
 	}
 
 	for _, webhook := range webhooks {
-		if isWebhookValid(caller, ci, eventAction, webhook) && strings.Contains(webhook.URL, "discord") {
+		if isRegistrationWebhookValid(caller, ci, eventAction, webhook) && strings.Contains(webhook.URL, "discord") {
 			sendDiscordWebhookPayload(
 				email,
 				title,
@@ -77,15 +84,74 @@ func LoopSendWebhooks(caller string, ci *structs.CountryInfoGet, endpoint, event
 				title,
 				method,
 				endpoint,
-				ci.IsoCode,
+				isocode,
 				webhook.URL)
 		}
 	}
 }
 
-func isWebhookValid(caller string, ci *structs.CountryInfoGet, eventAction string, webhook structs.WebhookGet) bool {
+func LoopSendWebhooksDashboard(caller string, dr *structs.DashboardResponse) {
+	client, err := authenticate.GetFireBaseAuthClient()
+	if err != nil {
+		log.Printf("Error initializing Firebase Auth: %v", err)
+		return
+	}
+
+	ctx := context.Background()
+
+	// Ignoring error as we've already confirmed the caller at the endpoint.
+	user, _ := client.GetUser(ctx, caller)
+
+	email := user.DisplayName + " (" + strings.ToLower(user.Email) + ")"
+	title = Webhooks.GETTitle
+	color = Webhooks.GETColor
+	method = Webhooks.EventInvoke
+	isocode = dr.IsoCode
+
+	webhooks, err := db.GetAllWebhooks()
+	if err != nil {
+		log.Printf("Error retriving webhooks from database: %v", err)
+		return
+	}
+
+	for _, webhook := range webhooks {
+		if isDashboardWebhookValid(caller, dr, Webhooks.EventInvoke, webhook) && strings.Contains(webhook.URL, "discord") {
+			sendDiscordWebhookPayload(
+				email,
+				title,
+				color,
+				method,
+				Endpoints.Dashboards,
+				dr,
+				webhook.URL)
+		} else {
+			sendWebhookPayload(
+				email,
+				title,
+				method,
+				Endpoints.Dashboards,
+				isocode,
+				webhook.URL)
+		}
+	}
+}
+
+func isRegistrationWebhookValid(caller string, ci *structs.CountryInfoGet, eventAction string, webhook structs.WebhookGet) bool {
 	if webhook.UUID == "" || webhook.UUID == caller {
 		if webhook.Country == "" || webhook.Country == ci.IsoCode {
+			if stringListContains(webhook.Event, eventAction) {
+				return true
+			}
+			return false
+		}
+		return false
+	}
+	return false
+}
+
+func isDashboardWebhookValid(caller string, dr *structs.DashboardResponse, eventAction string, webhook structs.WebhookGet) bool {
+	if webhook.UUID == "" || webhook.UUID == caller {
+		if webhook.Country == "" || webhook.Country == dr.IsoCode {
 			if stringListContains(webhook.Event, eventAction) {
 				return true
 			}
@@ -105,11 +171,11 @@ func stringListContains(s []string, str string) bool {
 	return false
 }
 
-func sendDiscordWebhookPayload(email, title string, color int, event, endpoint string, requestBody *structs.CountryInfoGet, payloadUrl string) {
+func sendDiscordWebhookPayload(email, title string, color int, event, endpoint string, requestBody interface{}, payloadUrl string) {
 	// Serialize the requestBody to a JSON string with pretty printing
 	requestBodyJSON, err := json.MarshalIndent(requestBody, "", "  ")
 	if err != nil {
-		fmt.Println("Error marshaling request body:", err)
+		log.Println("Error marshaling request body:", err)
 		return
 	}
 	// Remove the UUID field from the payload.
@@ -131,7 +197,7 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 		},
 		{
 			Name:   "Country",
-			Value:  requestBody.IsoCode,
+			Value:  isocode,
 			Inline: true,
 		},
 		{
@@ -164,14 +230,14 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 	// Convert the payload into a JSON string
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Error marshaling payload:", err)
+		log.Println("Error marshaling payload:", err)
 		return
 	}
 
 	// Create a new request using http
 	req, err := http.NewRequest("POST", payloadUrl, bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		log.Println("Error creating request:", err)
 		return
 	}
 
@@ -182,20 +248,20 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Println("Error sending request:", err)
 		return
 	}
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
+		log.Println("Error reading response body:", err)
 		return
 	}
 
 	// You can now log the response status and body
-	fmt.Println("Response Status:", resp.Status)
-	fmt.Println("Response Body:", string(body))
+	log.Println("Response Status:", resp.Status)
+	log.Println("Response Body:", string(body))
 }
 
 func sendWebhookPayload(email, title string, event, endpoint, country string, payloadUrl string) {
@@ -206,20 +272,20 @@ func sendWebhookPayload(email, title string, event, endpoint, country string, pa
 		"event":     event,
 		"endpoint":  endpoint,
 		"country":   country,
-		"timestamp": time.Now().Format(time.RFC3339), // Formatting the current time to RFC 3339
+		"timestamp": time.Now().UTC().Format("2006-01-02T15:04:05.999Z"), // Formatting the current time to ISO8601
 	}
 
 	// Convert the payload into a JSON string
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Error marshaling payload:", err)
+		log.Println("Error marshaling payload:", err)
 		return
 	}
 
 	// Create a new request using http
 	req, err := http.NewRequest(http.MethodPost, payloadUrl, bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		log.Println("Error creating request:", err)
 		return
 	}
 
@@ -230,14 +296,14 @@ func sendWebhookPayload(email, title string, event, endpoint, country string, pa
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Println("Error sending request:", err)
 		return
 	}
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
+		log.Println("Error reading response body:", err)
 		return
 	}
 

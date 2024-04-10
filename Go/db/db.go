@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc/status"
 	"log"
 	"net/http"
-	"time"
 )
 
 const (
@@ -70,7 +69,7 @@ func TestDBConnection() string {
 	// Attempt to update a specific document to test connectivity and permissions.
 	_, err = client.Collection(collectionID).Doc(documentID).Set(ctx, map[string]interface{}{
 		"PSA":         "DO NOT DELETE THIS DOCUMENT!",
-		"lastChecked": time.Now(),
+		"lastChecked": firestore.ServerTimestamp,
 	}, firestore.MergeAll)
 
 	if err != nil {
@@ -277,7 +276,6 @@ func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 		"Lastchange": firestore.ServerTimestamp,
 	})
 	if err != nil {
-		log.Println("Error saving data to database" + err.Error())
 		return err
 	}
 
@@ -477,7 +475,7 @@ func AddWebhook(userID, docID string, webhook structs.WebhookPost) error {
 	    "url": 		  webhook.URL,
    		"country":    webhook.Country,
    		"event":      webhook.Event,
-		"lastChange": time.Now(),
+		"lastChange": firestore.ServerTimestamp
 	})
 	if err != nil {
 		log.Printf(FirebaseClosingErr, err)
