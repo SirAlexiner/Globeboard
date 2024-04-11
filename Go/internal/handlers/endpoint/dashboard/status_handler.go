@@ -57,7 +57,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		http.Error(w, "Please provide API Token", http.StatusBadRequest)
+		http.Error(w, "Please provide API Token", http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token)

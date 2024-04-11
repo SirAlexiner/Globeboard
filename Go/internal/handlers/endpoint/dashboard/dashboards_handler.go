@@ -9,6 +9,7 @@ import (
 	"globeboard/internal/utils/structs"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -93,7 +94,9 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_func.LoopSendWebhooksDashboard(UUID, dr)
+	if os.Getenv("GO_ENV") != "test" {
+		_func.LoopSendWebhooksDashboard(UUID, dr)
+	}
 }
 
 func getWeatherInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *structs.DashboardResponse) bool {

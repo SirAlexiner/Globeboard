@@ -1,7 +1,18 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  globeboard-test:
+    image: go-globeboard-test:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    environment:
+      - TOKEN=${TOKEN}
+    volumes:
+      - ./.secrets:/root/.secrets:ro
+      - ./web:/root/web:ro
   globeboard:
+    image: go-globeboard:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,9 +23,7 @@ services:
       - TOKEN=${TOKEN}
     volumes:
       - ./.secrets:/root/.secrets:ro
-  globeboard-test:
-    build:
-      context: .
-      dockerfile: Dockerfile-test
+      - ./web:/root/web:ro
     depends_on:
-      - globeboard
+      globeboard-test:
+        condition: service_completed_successfully

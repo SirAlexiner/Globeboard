@@ -193,7 +193,6 @@ func DeleteApiKey(apiKey string) error {
 		return fmt.Errorf("failed to delete API Key: %v", err)
 	}
 
-	log.Printf("API key %s deleted successfully\n", apiKey)
 	return nil
 }
 

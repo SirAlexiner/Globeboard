@@ -13,6 +13,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 const (
@@ -116,8 +117,9 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventRegister)
+	if os.Getenv("GO_ENV") != "test" {
+		_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventRegister)
+	}
 }
 
 // handleRegGetAllRequest handles GET requests to retrieve a registered country.
@@ -154,8 +156,9 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	for _, reg := range regs {
-		_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventInvoke)
+	if os.Getenv("GO_ENV") != "test" {
+		for _, reg := range regs {
+			_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventInvoke)
+		}
 	}
 }
