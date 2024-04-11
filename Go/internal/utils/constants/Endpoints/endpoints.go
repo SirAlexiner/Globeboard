@@ -8,7 +8,8 @@ import (
 
 const (
 	ApiKey           = Paths.Util + constants.APIVersion + "/key"
-	UserRegistration = Paths.Util + constants.APIVersion + "/register"
+	UserRegistration = Paths.Util + constants.APIVersion + "/user/register"
+	UserDeletion     = Paths.Util + constants.APIVersion + "/user/delete/{ID}"
 	RegistrationsID  = Paths.Dashboards + constants.APIVersion + "/registrations/{ID}"
 	Registrations    = Paths.Dashboards + constants.APIVersion + "/registrations"
 	Dashboards       = Paths.Dashboards + constants.APIVersion + "/dashboard/{ID}"

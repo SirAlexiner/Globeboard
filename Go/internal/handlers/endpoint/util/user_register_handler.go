@@ -17,7 +17,7 @@ const (
 	ISE = "Internal Server Error"
 )
 
-// UserRegistrationHandler handles HTTP GET requests to retrieve supported languages.
+// UserRegistrationHandler handles HTTP POST requests
 func UserRegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:

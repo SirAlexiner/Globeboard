@@ -39,6 +39,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc(Paths.Root, handlers.EmptyHandler)
 	mux.HandleFunc(Endpoints.UserRegistration, util.UserRegistrationHandler)
+	mux.HandleFunc(Endpoints.UserDeletion, util.UserDeletionHandler)
 	mux.HandleFunc(Endpoints.ApiKey, util.APIKeyHandler)
 	mux.HandleFunc(Endpoints.RegistrationsID, dashboard.RegistrationsIdHandler)
 	mux.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
