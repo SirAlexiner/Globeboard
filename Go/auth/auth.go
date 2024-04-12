@@ -4,9 +4,9 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
-	"globeboard/internal/utils/constants"
 	"google.golang.org/api/option"
 	"log"
+	"os"
 )
 
 var (
@@ -16,10 +16,10 @@ var (
 
 func GetFireBaseAuthClient() (*auth.Client, error) {
 	// Using the credential file
-	sa := option.WithCredentialsFile(constants.FirebaseCredentialPath)
+	sa := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		log.Println("Credentials not found: " + constants.FirebaseCredentialPath)
+		log.Println("Credentials not found: " + os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 		log.Println("Error on getting the application")
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func GetFireBaseAuthClient() (*auth.Client, error) {
 	client, err := app.Auth(ctx)
 	if err != nil {
 		// Logging the error
-		log.Println("Credentials file: '" + constants.FirebaseCredentialPath + "' lead to an error.")
+		log.Println("Credentials file: '" + os.Getenv("FIREBASE_CREDENTIALS_FILE") + "' lead to an error.")
 		return nil, err
 	}
 

@@ -2,28 +2,38 @@ version: "3.8"
 
 services:
   globeboard-test:
-    image: go-globeboard-test:latest
+    image: go-globeboard-test
     build:
       context: .
       dockerfile: Dockerfile-test
+    restart: no
     environment:
-      - TOKEN=${TOKEN}
+      TOKEN: ${TOKEN}
+      FIREBASE_CREDENTIALS_FILE: /run/secrets/firebase_credentials
+    secrets:
+      - firebase_credentials
     volumes:
-      - ./.secrets:/root/.secrets:ro
       - ./web:/root/web:ro
+
   globeboard:
-    image: go-globeboard:latest
+    image: go-globeboard
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - '${PORT}:${PORT}'
+    restart: unless-stopped
     environment:
-      - PORT=${PORT}
-      - TOKEN=${TOKEN}
+      PORT: ${PORT}
+      FIREBASE_CREDENTIALS_FILE: /run/secrets/firebase_credentials
+    secrets:
+      - firebase_credentials
     volumes:
-      - ./.secrets:/root/.secrets:ro
       - ./web:/root/web:ro
     depends_on:
       globeboard-test:
         condition: service_completed_successfully
+
+secrets:
+  firebase_credentials:
+    file: ${FIREBASE_CREDENTIALS_FILE}

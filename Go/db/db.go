@@ -7,7 +7,6 @@ import (
 	firebase "firebase.google.com/go"
 	"fmt"
 	authenticate "globeboard/auth"
-	"globeboard/internal/utils/constants"
 	"globeboard/internal/utils/constants/Firestore"
 	"globeboard/internal/utils/structs"
 	"google.golang.org/api/iterator"
@@ -16,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"log"
 	"net/http"
+	"os"
 )
 
 const (
@@ -32,10 +32,10 @@ var (
 func getFirestoreClient() (*firestore.Client, error) {
 
 	// Using the credential file
-	sa := option.WithCredentialsFile(constants.FirebaseCredentialPath)
+	sa := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		log.Println("Credentials not found: " + constants.FirebaseCredentialPath)
+		log.Println("Credentials not found: " + os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 		log.Println("Error on getting the application")
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func getFirestoreClient() (*firestore.Client, error) {
 	client, err := app.Firestore(ctx)
 	if err != nil {
 		// Logging the error
-		log.Println("Credentials file: '" + constants.FirebaseCredentialPath + "' lead to an error.")
+		log.Println("Credentials file: '" + os.Getenv("FIREBASE_CREDENTIALS_FILE") + "' lead to an error.")
 		return nil, err
 	}
 

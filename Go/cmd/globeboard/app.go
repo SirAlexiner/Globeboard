@@ -4,7 +4,6 @@ import (
 	"globeboard/internal/handlers"
 	"globeboard/internal/handlers/endpoint/dashboard"
 	"globeboard/internal/handlers/endpoint/util"
-	"globeboard/internal/utils/constants"
 	"globeboard/internal/utils/constants/Endpoints"
 	"globeboard/internal/utils/constants/Paths"
 	"log"
@@ -23,7 +22,7 @@ func fileExists(filename string) bool {
 }
 
 func main() {
-	if !fileExists(constants.FirebaseCredentialPath) {
+	if !fileExists(os.Getenv("FIREBASE_CREDENTIALS_FILE")) {
 		log.Fatal("Firebase Credentials file is not mounted")
 		return
 	}

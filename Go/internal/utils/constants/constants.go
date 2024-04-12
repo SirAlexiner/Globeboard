@@ -3,9 +3,8 @@ package constants
 
 // APIVersion represents the version of the API.
 const (
-	APIVersion             = "v1"
-	FirebaseCredentialPath = "./.secrets/firebaseCredentials.json"
-	ApiKeyLength           = 20
-	DocIdLength            = 24
-	IdLength               = 16
+	APIVersion   = "v1"
+	ApiKeyLength = 20
+	DocIdLength  = 24
+	IdLength     = 16
 )
