@@ -10,45 +10,48 @@ func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		handleNotifGetRequest(w, r)
+	case http.MethodDelete:
+		handleNotifDeleteRequest(w, r)
+	case http.MethodPost:
+		handleNotifPostRequest(w, r)
 	default:
-		http.Error(w, "REST Method: "+r.Method+" not supported. Currently no methods are supported.", http.StatusNotImplemented)
+		http.Error(w, "REST Method: "+r.Method+" not supported.", http.StatusNotImplemented)
 		return
 	}
 }
 
 // handleGetRequest handles GET requests to retrieve readership dashboard for a specific language.
 func handleNotifGetRequest(w http.ResponseWriter, r *http.Request) {
-	//TODO::Complete HTTP Method Requests
+	// Check if the link wants to get one webhook or all webhooks, and respond accordingly
+
+	// Make system take JSON
+
+	// Then send ID back
 }
 
-func AddNewWebhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		// Add some webhook and return some id
-	} else {
-		http.Error(w, "REST Method: "+r.Method+" not supported. Currently no methods are supported.", http.StatusNotImplemented)
-	}
+func handleNotifDeleteRequest(w http.ResponseWriter, r *http.Request) {
+	// Given the id from the url, delete the request
+
+	// Fetch the id from URL
+
+	// Check if webhook with that id exists
+
+	// exists: delete
+	// (optional) Ask for deletion
+
+	// Perform deletion
+	// Reorder?
 }
 
-func DeleteWebhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodDelete {
-		// Delete a registered webhook
-	} else {
-		http.Error(w, "REST Method: "+r.Method+" not supported. Currently no methods are supported.", http.StatusNotImplemented)
-	}
-}
+func handleNotifPostRequest(w http.ResponseWriter, r *http.Request) {
 
-func ViewOneWebhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		// Show one webhook
-	} else {
-		http.Error(w, "REST Method: "+r.Method+" not supported. Currently no methods are supported.", http.StatusNotImplemented)
-	}
-}
+	// Get url
 
-func ViewAllWebhooks(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		// Show all webhooks
-	} else {
-		http.Error(w, "REST Method: "+r.Method+" not supported. Currently no methods are supported.", http.StatusNotImplemented)
-	}
+	// Check if url has an additional parameter
+
+	// Has parameter
+	//
+
+	// Has no parameter
+	// Show all webhooks
 }
