@@ -33,7 +33,7 @@ func fileExistsTest(filename string) bool {
 
 func init() {
 	if !fileExistsTest(os.Getenv("FIREBASE_CREDENTIALS_FILE")) {
-		log.Panic("Firebase Credentials file is not mounted:", os.Getenv("FIREBASE_CREDENTIALS_FILE"))
+		log.Panic("Firebase Credentials file is not mounted: ", os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 	}
 	err := os.Setenv("GO_ENV", "test")
 	if err != nil {
