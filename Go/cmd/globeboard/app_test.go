@@ -5,6 +5,7 @@ import (
 	"globeboard/internal/handlers/endpoint/dashboard"
 	"globeboard/internal/utils/constants/Endpoints"
 	"globeboard/internal/utils/constants/Paths"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -22,7 +23,18 @@ var (
 	ID    = ""
 )
 
+func fileExistsTest(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
 func init() {
+	if !fileExistsTest(os.Getenv("FIREBASE_CREDENTIALS_FILE")) {
+		log.Panic("Firebase Credentials file is not mounted:", os.Getenv("FIREBASE_CREDENTIALS_FILE"))
+	}
 	err := os.Setenv("GO_ENV", "test")
 	if err != nil {
 		panic("Unable to set GO_ENV")

@@ -13,18 +13,21 @@ COPY go.mod go.sum ./
 COPY ../ ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go test -c -installsuffix cgo -o main ./cmd/globeboard
+RUN CGO_ENABLED=0 GOOS=linux go test -c -installsuffix cgo -o test ./cmd/globeboard
 
 # Use a minimal alpine image for the final build stage.
-FROM alpine:3.19
+FROM golang:1.22-alpine
 
-# Install CA certificates.
+# Install CA certificates and Go.
 RUN apk --no-cache add ca-certificates
+
+# Install Report Tool.
+RUN go install github.com/jstemmer/go-junit-report/v2@latest
 
 WORKDIR /root/
 
 # Copy the pre-built binary file from the previous stage.
-COPY --from=builder /app/main .
+COPY --from=builder /app/test .
 
 # Run
-CMD ["./main"]
+CMD ./test -test.v | go-junit-report > report.xml && ./test -test.v

@@ -1,17 +1,52 @@
 stages:
-  - test
+  - Build
+  - Test
+  - Deploy
 
-test_globeboard:
-  stage: test
-  image: docker:19.03.12
-  services:
-    - docker:19.03.12-dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
+image: docker
+
+services:
+  - name: 'docker:dind'
+    command: [ '--tls=false', '--host=tcp://0.0.0.0:2375' ]
+
+variables:
+  DOCKER_TLS_CERTDIR: ''
+  SECURE_FILES_DOWNLOAD_PATH: './.secrets/'
+
+Build:
+  stage: Build
+  before_script:
+    - cd ./Go/
   script:
-    - apk add --no-cache docker-compose
-    - docker-compose -f Go/docker-compose.yml up --build globeboard-test
-  only:
-    - main
+    - docker compose build
+
+Test:
+  stage: Test
+  before_script:
+    - cd ./Go/
+    - apk add --no-cache curl bash go
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash > /dev/null 2>&1
+  script:
+    - docker compose up globeboard-test --exit-code-from globeboard-test
+    - docker compose cp globeboard-test:/root/report.xml ./report.xml
+  after_script:
+    - cd ./Go/
+    - docker compose down globeboard-test
+  artifacts:
+    when: always
+    paths:
+      - ./Go/report.xml
+    reports:
+      junit: ./Go/report.xml
+
+Deploy:
+  stage: Deploy
+  before_script:
+    - cd ./Go/
+    - apk add --no-cache curl bash
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash > /dev/null 2>&1
+  script:
+    - docker compose up globeboard -d
+  after_script:
+    - cd ./Go/
+    - docker compose down

@@ -23,8 +23,7 @@ func fileExists(filename string) bool {
 
 func main() {
 	if !fileExists(os.Getenv("FIREBASE_CREDENTIALS_FILE")) {
-		log.Fatal("Firebase Credentials file is not mounted")
-		return
+		log.Panic("Firebase Credentials file is not mounted")
 	}
 
 	// Get the port from the environment variable or set default to 8080
