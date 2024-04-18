@@ -1,8 +1,13 @@
-# GlobeBoard Go REST API [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/)
+# GlobeBoard Go REST API
 
 ![Text: GlobeBoard Go Rest API](./readme/go.jpg)
 
 ## Introduction
+
+[![pipeline status](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/badges/main/pipeline.svg)](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/-/commits/main)
+[![coverage report](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/badges/main/coverage.svg)](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/-/commits/main)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/)
+
 GlobeBoard Go REST API is a webapplication REST API service designed to provide GeoLocational Information.
 
 ## Author
@@ -21,9 +26,9 @@ This code was developed by:
 - **Endpoint**: `/library/v1/?languages={:two_letter_language_code+}{&search={:string}}{&page={:number}}`
 - **Method**: GET
 - **Description**: This endpoint provides access to the Gutendex library, allowing users to retrieve various information about books and their metadata. Users can specify parameters to filter the results:
-  - `languages`: Optional parameter to filter books by language. Users can specify one or more two-letter language codes.
-  - `search`: Optional parameter to search for books based on a provided string.
-  - `page`: Optional parameter to paginate through the results, specifying the page number.
+    - `languages`: Optional parameter to filter books by language. Users can specify one or more two-letter language codes.
+    - `search`: Optional parameter to search for books based on a provided string.
+    - `page`: Optional parameter to paginate through the results, specifying the page number.
 
 Example:
 ```
@@ -42,7 +47,7 @@ This endpoint enables users to query the Gutendex library and retrieve relevant 
 - **Method**: GET
 - **Description**: This endpoint allows users to retrieve the count of books, authors, and pages available in the Gutendex library for the specified languages.
 - **Parameters**:
-  - `languages`: (Required) Specifies the languages for which book count is requested. It accepts one or more two-letter language codes.
+    - `languages`: (Required) Specifies the languages for which book count is requested. It accepts one or more two-letter language codes.
 - **Example**:
   ```
   /librarystats/v1/bookcount/?languages=en,fr
@@ -52,8 +57,8 @@ This endpoint enables users to query the Gutendex library and retrieve relevant 
 - **Endpoint**: `/librarystats/v1/readership/{:two_letter_language_code}/{?limit={:number}}`
 - **Description**: This endpoint retrieves statistics related to readership, such as the number of possible readers for the Gutendex library from countries for a specified language.
 - **Parameters**:
-  - `language_code`: (Required) Specifies the language for which readership statistics are requested.
-  - `limit`: (Optional) Limits the number of results returned. Defaults to all readership statistics if not provided.
+    - `language_code`: (Required) Specifies the language for which readership statistics are requested.
+    - `limit`: (Optional) Limits the number of results returned. Defaults to all readership statistics if not provided.
 - **Example**:
   ```
   /librarystats/v1/readership/en/?limit=10

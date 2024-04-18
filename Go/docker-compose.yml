@@ -31,4 +31,4 @@ services:
 
 secrets:
   Firebase:
-    file: ${SECRETS}
+    file: ${FIREBASE_CREDENTIALS_FILE}

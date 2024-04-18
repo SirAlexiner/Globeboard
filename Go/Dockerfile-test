@@ -13,7 +13,7 @@ COPY go.mod go.sum ./
 COPY ../ ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go test -c -installsuffix cgo -o test ./cmd/globeboard
+RUN CGO_ENABLED=0 GOOS=linux go test -cover -coverpkg=./... -c -installsuffix cgo -o test ./cmd/globeboard
 
 # Use a minimal alpine image for the final build stage.
 FROM golang:1.22-alpine

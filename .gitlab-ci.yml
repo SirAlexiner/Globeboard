@@ -24,7 +24,7 @@ Test:
   stage: Test
   before_script:
     - cd ./Go/
-    - apk add --no-cache curl bash go
+    - apk add --no-cache curl bash
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash > /dev/null 2>&1
   script:
     - docker compose up globeboard-test --exit-code-from globeboard-test
@@ -32,6 +32,7 @@ Test:
   after_script:
     - cd ./Go/
     - docker compose down globeboard-test
+  coverage: '/coverage:\s+(\d+\.\d+)%\s+of statements/'
   artifacts:
     when: always
     paths:
