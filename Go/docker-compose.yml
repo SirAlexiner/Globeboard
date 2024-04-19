@@ -22,7 +22,6 @@ services:
       dockerfile: Dockerfile-test
     restart: no
     environment:
-      TOKEN: ${TOKEN}
       FIREBASE_CREDENTIALS_FILE: /run/secrets/Firebase
     volumes:
       - ./web:/root/web:ro
