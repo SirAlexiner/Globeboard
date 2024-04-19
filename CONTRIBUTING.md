@@ -12,7 +12,7 @@ Before contributing, please read and adhere to our Code of Conduct. We expect al
 - Push your changes to your forked repository.
 - Submit a pull request to the original repository, explaining your changes and why they should be included.
 
-Please note that we will only accept contributions that are consistent with the project purpose and goals. Additionally, any contributions must follow the code of conduct outlined in the [`conduct.md`](conduct.md) file.
+Please note that we will only accept contributions that are consistent with the project purpose and goals. Additionally, any contributions must follow the code of conduct outlined in the [`conduct.md`](CODE_OF_CONDUCT.md) file.
 
 ## Bug Reports and Feature Requests
 If you encounter any issues or have ideas for improvements, please open an issue. Be sure to include a clear and concise description of the problem or feature request, steps to reproduce (if applicable), and any relevant screenshots or error messages.
@@ -26,4 +26,4 @@ By contributing to this project, you agree that your contributions will be licen
 # Agreement
 By agreeing to this document, you agree that you will not distribute, sell, or capitalize on the project.
 By contributing to the project you automatically agree to this document,
-breach of this document will be handled per `Consequences of Unacceptable Behavior` as listed in [`conduct.md`](conduct.md)
+breach of this document will be handled per `Consequences of Unacceptable Behavior` as listed in [`conduct.md`](CODE_OF_CONDUCT.md)
