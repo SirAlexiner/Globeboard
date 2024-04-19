@@ -3,14 +3,15 @@ stages:
   - Test
   - Deploy
 
-image: docker
-
-services:
-  - name: 'docker:dind'
-    command: [ '--tls=false', '--host=tcp://0.0.0.0:2375' ]
+default:
+  image: docker
+  services:
+    - name: 'docker:dind'
+  before_script:
+    - docker info
 
 variables:
-  DOCKER_TLS_CERTDIR: ''
+  DOCKER_TLS_CERTDIR: '/certs'
   SECURE_FILES_DOWNLOAD_PATH: './.secrets/'
 
 Build:
