@@ -16,7 +16,7 @@ This code was developed by:
 - Phrot Vedal [@BossTheModern](https://git.gvk.idi.ntnu.no/BossTheModern)
 ## Features
 
-- User Registration trough Firestore Auth
+- User Registration through Firestore Auth
 - API Key Access
 - GitLab CI/CD Integration
 - Docker Compose Containerization
@@ -34,31 +34,31 @@ This code was developed by:
 
 ## API Reference / Documentation
 
-### Register as a user to retrieve API key:
+### Register as a user to retrieve an API key:
 
 ```http
   POST /util/v1/user/register
 ```
-| Content-Type |
-| :----------- |
+| Content-Type                        |
+|:------------------------------------|
 | `application/x-www-form-urlencoded` |
 
-| Key | Value: Type     | Description                |
-|:----------|:---------|:---------------------------|
-| `username` | `string` | **Required**. Your Username |
-| `email` | `string` | **Required**. Your Email |
-| `password` | `string` | **Required**. Your Password |
+| Key        | Value: Type | Description                 |
+|:-----------|:------------|:----------------------------|
+| `username` | `string`    | **Required**. Your Username |
+| `email`    | `string`    | **Required**. Your Email    |
+| `password` | `string`    | **Required**. Your Password |
 
 #### Response:
 
-| Status Code  |    Content-Type    |
-|:-------------|:-------------------|
-| `201 Created`| `application/json` |
+| Status Code   | Content-Type       |
+|:--------------|:-------------------|
+| `201 Created` | `application/json` |
 
 ```json
 {
-    "token": "your API key"
-    "userid" "your Unique User ID (UUID)"
+    "token": "your API key",
+    "userid": "your Unique User ID (UUID)"
 }
 ```
 
@@ -70,7 +70,7 @@ This code was developed by:
 ```
 
 | Parameter | Type     | Description             |
-| :-------- | :------- | :---------------------- |
+|:----------|:---------|:------------------------|
 | `ID`      | `string` | **Required**. Your UUID |
 
 #### Response:
@@ -85,13 +85,13 @@ This code was developed by:
 ```
 
 | Authorization | `Your UUID` |
-| :------------ |:------------|
+|:--------------|:------------|
 
 #### Response:
 
-| Status Code  |    Content-Type    |
-|:-------------|:-------------------|
-| `201 Created`| `application/json` |
+| Status Code   | Content-Type       |
+|:--------------|:-------------------|
+| `201 Created` | `application/json` |
 
 ```json
 {
@@ -99,14 +99,14 @@ This code was developed by:
 }
 ```
 
-### Get New API key: (Old must be deleted first, only allowed one)
+### Get a New API key: (Old must be deleted first, only allowed one)
 
 ```http
   DELETE /util/v1/key/?token={token}
 ```
 
-| Parameter | Type     | Description                |
-| :-------- | :------- | :--------------------------|
+| Parameter | Type     | Description                               |
+|:----------|:---------|:------------------------------------------|
 | `token`   | `string` | **Required**. Your API key, to be deleted |
 
 #### Response:
@@ -114,21 +114,21 @@ This code was developed by:
 | Status Code | `204 No Content` |
 |:------------|:-----------------|
 
-### Check API Statuses: (Firestore, Dependant 3rd party API's, Version, Uptime)
+### Check API Statuses: (Firestore, independent third party API, Version, Uptime)
 
 ```http
   GET /dashboards/v1/status?token={token}
 ```
 
 | Parameter | Type     | Description                |
-| :-------- | :------- | :--------------------------|
+|:----------|:---------|:---------------------------|
 | `token`   | `string` | **Required**. Your API key |
 
 #### Response:
 
-| Status Code  |    Content-Type    |
+| Status Code  | Content-Type       |
 |:-------------|:-------------------|
-|   `200 OK`   | `application/json` |
+| `200 OK`     | `application/json` |
 
 ```json
 {
@@ -149,15 +149,15 @@ This code was developed by:
 ```
 
 | Parameter | Type     | Description                |
-| :-------- | :------- | :--------------------------|
+|:----------|:---------|:---------------------------|
 | `token`   | `string` | **Required**. Your API key |
 
-##### Example POST Body:
+##### Example POST-Body:
 ```json
 {
-   //Name of the Country, Can be omitted if "isocode" is provided. Case-Insensitive
+   //The Name of the Country Can be omitted if "isocode" is provided. Case-Insensitive
    "country": "Norway",
-   //Isocode for the Country, Can be omitted if "country" is provided. Case-Insensitive                                    
+   //Isocode for the Country Can be omitted if "country" is provided. Case-Insensitive                                    
    "isoCode": "NO",
    // Map of Features to include when querying the dashboard endpoint,
    // features to not include can be omitted
@@ -186,9 +186,9 @@ This code was developed by:
 
 #### Response:
 
-| Status Code  |    Content-Type    |
-|:-------------|:-------------------|
-| `201 Created`| `application/json` |
+| Status Code   | Content-Type       |
+|:--------------|:-------------------|
+| `201 Created` | `application/json` |
 
 ```json
 {
@@ -205,15 +205,15 @@ This code was developed by:
 ```
 
 | Parameter | Type     | Description                |
-| :-------- | :------- | :--------------------------|
+|:----------|:---------|:---------------------------|
 | `token`   | `string` | **Required**. Your API key |
 
 
 #### Response:
 
-| Status Code  |    Content-Type    |
+| Status Code  | Content-Type       |
 |:-------------|:-------------------|
-|   `200 OK`   | `application/json` |
+| `200 OK`     | `application/json` |
 
 ##### Example Response Body:
 ```json
@@ -253,7 +253,7 @@ This code was developed by:
             ]
         },
         "lastchange": "2024-04-18T22:19:48.651Z"
-    }
+    },
     ...
 ]
 ```
@@ -265,16 +265,16 @@ This code was developed by:
 ```
 
 | Parameter | Type     | Description                       |
-| :-------- | :------- | :---------------------------------|
+|:----------|:---------|:----------------------------------|
 | `ID`      | `string` | **Required**. The Registration ID |
 | `token`   | `string` | **Required**. Your API key        |
 
 
 #### Response:
 
-| Status Code  |    Content-Type    |
+| Status Code  | Content-Type       |
 |:-------------|:-------------------|
-|   `200 OK`   | `application/json` |
+| `200 OK`     | `application/json` |
 
 ##### Example Response Body:
 ```json
@@ -304,14 +304,14 @@ This code was developed by:
 ```
 
 | Parameter | Type     | Description                       |
-| :-------- | :------- | :---------------------------------|
+|:----------|:---------|:----------------------------------|
 | `ID`      | `string` | **Required**. The Registration ID |
 | `token`   | `string` | **Required**. Your API key        |
 
-Specify features to update, Country/Isocode can not be updated,
-every features is not allowed to be false, atleast one feature must be true.
+Specify features to update, Country/Isocode cannot be updated;
+every feature is not allowed to be false, at least one feature must be true.
 
-##### Example POST Body:
+##### Example POST-Body:
 ```json
 {
     "features": {
@@ -325,9 +325,9 @@ every features is not allowed to be false, atleast one feature must be true.
 
 #### Response:
 
-| Status Code  |    Content-Type    |
-|:-------------|:-------------------|
-|`202 Accepted`| `application/json` |
+| Status Code    | Content-Type       |
+|:---------------|:-------------------|
+| `202 Accepted` | `application/json` |
 
 ```json
 {
@@ -342,13 +342,13 @@ every features is not allowed to be false, atleast one feature must be true.
 ```
 
 | Parameter | Type     | Description                       |
-| :-------- | :------- | :---------------------------------|
+|:----------|:---------|:----------------------------------|
 | `ID`      | `string` | **Required**. The Registration ID |
 | `token`   | `string` | **Required**. Your API key        |
 
 #### Response:
 
-|  Status Code  |  `204 No Content`  |
+| Status Code   | `204 No Content`   |
 |:--------------|:-------------------|
 
 ### Retrieve a populated specific registration:
@@ -358,15 +358,15 @@ every features is not allowed to be false, atleast one feature must be true.
 ```
 
 | Parameter | Type     | Description                       |
-| :-------- | :------- | :---------------------------------|
+|:----------|:---------|:----------------------------------|
 | `ID`      | `string` | **Required**. The Registration ID |
 | `token`   | `string` | **Required**. Your API key        |
 
 #### Response:
 
-|   Status Code  |    Content-Type    |
+| Status Code    | Content-Type       |
 |:---------------|:-------------------|
-|    `200 OK`    | `application/json` |
+| `200 OK`       | `application/json` |
 
 ##### Example Response Body:
 ```json
@@ -412,31 +412,31 @@ every features is not allowed to be false, atleast one feature must be true.
   POST /dashboards/v1/notifications?token={token}
 ```
 
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :---------------------------------|
-| `token`   | `string` | **Required**. Your API key        |
+| Parameter | Type     | Description                |
+|:----------|:---------|:---------------------------|
+| `token`   | `string` | **Required**. Your API key |
 
-##### Example POST Body:
+##### Example POST-Body:
 ```json
 {
    "url": "Where to send the webhook payload", //Discord, webhook.site, etc...
-   "country": "isocode for the country the webhook applies to, leave empty for all."
+   "country": "isocode for the country the webhook applies to, leave empty for all.",
    "event": ["List of events the webhook applies to."]
 }
 ```
 ##### List of Webhook Events:
-| Event       | Description                            |
-| :---------- | :--------------------------------------|
-| `INVOKE`    | Envoke Webhook on retrival events.     |
-| `REGISTER`  | Envoke Webhook on registration events. |
-| `CHANGE`    | Envoke Webhook on update events.       |
-| `DELETE`    | Envoke Webhook on deletion events.     |
+| Event      | Description                            |
+|:-----------|:---------------------------------------|
+| `INVOKE`   | Envoke Webhook on retrival events.     |
+| `REGISTER` | Envoke Webhook on registration events. |
+| `CHANGE`   | Envoke Webhook on update events.       |
+| `DELETE`   | Envoke Webhook on deletion events.     |
 
 #### Response:
 
-|   Status Code  |    Content-Type    |
+| Status Code    | Content-Type       |
 |:---------------|:-------------------|
-|  `201 Created` | `application/json` |
+| `201 Created`  | `application/json` |
 
 ##### Example Response Body:
 ```json
@@ -451,15 +451,15 @@ every features is not allowed to be false, atleast one feature must be true.
   GET /dashboards/v1/notifications?token={token}
 ```
 
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :---------------------------------|
-| `token`   | `string` | **Required**. Your API key        |
+| Parameter | Type     | Description                |
+|:----------|:---------|:---------------------------|
+| `token`   | `string` | **Required**. Your API key |
 
 #### Response:
 
-|   Status Code  |    Content-Type    |
+| Status Code    | Content-Type       |
 |:---------------|:-------------------|
-|    `200 OK`    | `application/json` |
+| `200 OK`       | `application/json` |
 
 ##### Example Response Body:
 ```json
@@ -492,15 +492,15 @@ every features is not allowed to be false, atleast one feature must be true.
 ```
 
 | Parameter | Type     | Description                  |
-| :-------- | :------- | :----------------------------|
+|:----------|:---------|:-----------------------------|
 | `ID`      | `string` | **Required**. The Webhook ID |
 | `token`   | `string` | **Required**. Your API key   |
 
 #### Response:
 
-|   Status Code  |    Content-Type    |
+| Status Code    | Content-Type       |
 |:---------------|:-------------------|
-|    `200 OK`    | `application/json` |
+| `200 OK`       | `application/json` |
 
 ##### Example Response Body:
 ```json
@@ -521,20 +521,20 @@ every features is not allowed to be false, atleast one feature must be true.
 ```
 
 | Parameter | Type     | Description                  |
-| :-------- | :------- | :----------------------------|
+|:----------|:---------|:-----------------------------|
 | `ID`      | `string` | **Required**. The Webhook ID |
 | `token`   | `string` | **Required**. Your API key   |
 
 #### Response:
 
-|  Status Code  |  `204 No Content`  |
+| Status Code   | `204 No Content`   |
 |:--------------|:-------------------|
 
 ## Environment Variables
 
 To run this project, you will need to add the following environment variables to your .env file, or project environment.
 
-`PORT` - Port to run project on.
+`PORT` - Port to run the project on.
 
 `FIREBASE_CREDENTIALS_FILE` - Path to your Firebase credentials file.
 
@@ -568,12 +568,12 @@ cd globeboard/Go/
   ```bash
   docker compose build
   ```
-    - #### Attached - Command line remains connected:
+    - #### Attached—Command line remains connected:
       ```bash
       docker compose up globeboard
       ```
 
-    - #### Detached - Start the container in the background:
+    - #### Detached—Start the container in the background:
       ```bash
       docker compose up globeboard -d
       ```
@@ -627,12 +627,12 @@ cd globeboard/Go/
   ```bash
   docker compose build
   ```
-    - #### Attached - Command line remains connected:
+    - #### Attached—Command line remains connected:
       ```bash
       docker compose up globeboard-test
       ```
 
-    - #### Detached - Start the container in the background:
+    - #### Detached—Start the container in the background:
       ```bash
       docker compose up globeboard-test -d
       ```
@@ -678,4 +678,6 @@ For support, email `torgrilt@stud.ntnu.no` or `torgrim.l.thorsen@gmail.com`.
 This project is licensed under:
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC_BY--NC--ND_4.0-green.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
-You are free to download and use this code for educational, personal learning, or non-commercial purposes. And while we encourage these uses, please note that utilizing this project for commercial distribution, sales, or any form of monetization is not permitted.
+You are free to download and use this code for educational, personal learning, or non-commercial purposes.
+And while we encourage these uses, please note that using this project for commercial distribution,
+sales, or any form of monetization is not permitted.
