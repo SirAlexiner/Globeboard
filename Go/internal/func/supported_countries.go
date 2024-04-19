@@ -47,7 +47,7 @@ func getSupportedCountries() (map[string]string, error) {
 	return countriesMap, nil
 }
 
-func ValidateCountryInfo(ci *structs.CountryInfoGet) error {
+func ValidateCountryInfo(ci *structs.CountryInfoInternal) error {
 	err := validateCountryNameIsoCode(ci)
 	if err != nil {
 		return err
@@ -60,10 +60,10 @@ func ValidateCountryInfo(ci *structs.CountryInfoGet) error {
 	return nil
 }
 
-func validateCountryNameIsoCode(ci *structs.CountryInfoGet) error {
-	validCountries, err := getSupportedCountries() // Adjusted to use the map version.
+func validateCountryNameIsoCode(ci *structs.CountryInfoInternal) error {
+	validCountries, err := getSupportedCountries()
 	if err != nil {
-		return errors.New("error validating country")
+		return fmt.Errorf("error validating country: %v", err)
 	}
 
 	if err := validateCountryOrIsoCodeProvided(ci); err != nil {
@@ -81,14 +81,14 @@ func validateCountryNameIsoCode(ci *structs.CountryInfoGet) error {
 	return validateCorrespondence(ci, validCountries)
 }
 
-func validateCountryOrIsoCodeProvided(ci *structs.CountryInfoGet) error {
+func validateCountryOrIsoCodeProvided(ci *structs.CountryInfoInternal) error {
 	if ci.Country == "" && ci.IsoCode == "" {
 		return errors.New("either country name or ISO code must be provided")
 	}
 	return nil
 }
 
-func validateIsoCode(ci *structs.CountryInfoGet, validCountries map[string]string) error {
+func validateIsoCode(ci *structs.CountryInfoInternal, validCountries map[string]string) error {
 	if ci.IsoCode != "" {
 		ci.IsoCode = strings.ToTitle(ci.IsoCode)
 		if country, exists := validCountries[ci.IsoCode]; !exists {
@@ -100,7 +100,7 @@ func validateIsoCode(ci *structs.CountryInfoGet, validCountries map[string]strin
 	return nil
 }
 
-func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoGet, validCountries map[string]string) error {
+func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoInternal, validCountries map[string]string) error {
 	if ci.IsoCode == "" && ci.Country != "" {
 		ci.Country = cases.Title(language.English, cases.Compact).String(ci.Country)
 		for code, name := range validCountries {
@@ -114,7 +114,7 @@ func updateAndValidateIsoCodeForCountry(ci *structs.CountryInfoGet, validCountri
 	return nil
 }
 
-func validateCorrespondence(ci *structs.CountryInfoGet, validCountries map[string]string) error {
+func validateCorrespondence(ci *structs.CountryInfoInternal, validCountries map[string]string) error {
 	if ci.Country != "" && ci.IsoCode != "" {
 		ci.Country = cases.Title(language.English, cases.Compact).String(ci.Country)
 		if validCountries[ci.IsoCode] != ci.Country {

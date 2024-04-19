@@ -24,7 +24,7 @@ var (
 	method  = ""
 )
 
-func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoGet, endpoint, eventAction string) {
+func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoExternal, endpoint, eventAction string) {
 	client, err := authenticate.GetFireBaseAuthClient()
 	if err != nil {
 		log.Printf("Error initializing Firebase Auth: %v", err)
@@ -32,9 +32,6 @@ func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoGet, en
 	}
 
 	ctx := context.Background()
-
-	// Remove UUID from webhook json
-	ci.UUID = ""
 
 	// Ignoring error as we've already confirmed the caller at the endpoint.
 	user, _ := client.GetUser(ctx, caller)
@@ -69,23 +66,25 @@ func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoGet, en
 	}
 
 	for _, webhook := range webhooks {
-		if isRegistrationWebhookValid(caller, ci, eventAction, webhook) && strings.Contains(webhook.URL, "discord") {
-			sendDiscordWebhookPayload(
-				email,
-				title,
-				color,
-				method,
-				endpoint,
-				ci,
-				webhook.URL)
-		} else {
-			sendWebhookPayload(
-				email,
-				title,
-				method,
-				endpoint,
-				isocode,
-				webhook.URL)
+		if isRegistrationWebhookValid(caller, ci, eventAction, webhook) {
+			if strings.Contains(webhook.URL, "discord") {
+				sendDiscordWebhookPayload(
+					email,
+					title,
+					color,
+					method,
+					endpoint,
+					ci,
+					webhook.URL)
+			} else {
+				sendWebhookPayload(
+					email,
+					title,
+					method,
+					endpoint,
+					isocode,
+					webhook.URL)
+			}
 		}
 	}
 }
@@ -115,28 +114,30 @@ func LoopSendWebhooksDashboard(caller string, dr *structs.DashboardResponse) {
 	}
 
 	for _, webhook := range webhooks {
-		if isDashboardWebhookValid(caller, dr, Webhooks.EventInvoke, webhook) && strings.Contains(webhook.URL, "discord") {
-			sendDiscordWebhookPayload(
-				email,
-				title,
-				color,
-				method,
-				Endpoints.Dashboards,
-				dr,
-				webhook.URL)
-		} else {
-			sendWebhookPayload(
-				email,
-				title,
-				method,
-				Endpoints.Dashboards,
-				isocode,
-				webhook.URL)
+		if isDashboardWebhookValid(caller, dr, Webhooks.EventInvoke, webhook) {
+			if strings.Contains(webhook.URL, "discord") {
+				sendDiscordWebhookPayload(
+					email,
+					title,
+					color,
+					method,
+					Endpoints.DashboardsID,
+					dr,
+					webhook.URL)
+			} else {
+				sendWebhookPayload(
+					email,
+					title,
+					method,
+					Endpoints.DashboardsID,
+					isocode,
+					webhook.URL)
+			}
 		}
 	}
 }
 
-func isRegistrationWebhookValid(caller string, ci *structs.CountryInfoGet, eventAction string, webhook structs.WebhookGet) bool {
+func isRegistrationWebhookValid(caller string, ci *structs.CountryInfoExternal, eventAction string, webhook structs.WebhookGet) bool {
 	if webhook.UUID == "" || webhook.UUID == caller {
 		if webhook.Country == "" || webhook.Country == ci.IsoCode {
 			if stringListContains(webhook.Event, eventAction) {

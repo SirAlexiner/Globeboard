@@ -13,7 +13,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 )
 
 const (
@@ -36,8 +35,8 @@ func RegistrationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DecodeCountryInfo(data io.ReadCloser) (*structs.CountryInfoGet, error) {
-	var ci *structs.CountryInfoGet
+func DecodeCountryInfo(data io.ReadCloser) (*structs.CountryInfoInternal, error) {
+	var ci *structs.CountryInfoInternal
 	if err := json.NewDecoder(data).Decode(&ci); err != nil {
 		return nil, err
 	}
@@ -117,9 +116,14 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if os.Getenv("GO_ENV") != "test" {
-		_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventRegister)
-	}
+
+	cie := new(structs.CountryInfoExternal)
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.Registrations, Webhooks.EventRegister)
 }
 
 // handleRegGetAllRequest handles GET requests to retrieve a registered country.
@@ -149,16 +153,27 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
+	// Parse Data for External Users
+	var cies []*structs.CountryInfoExternal
+	for _, reg := range regs {
+		cie := new(structs.CountryInfoExternal)
+		cie.ID = reg.ID
+		cie.Country = reg.Country
+		cie.IsoCode = reg.IsoCode
+		cie.Features = reg.Features
+		cie.Lastchange = reg.Lastchange
+		cies = append(cies, cie)
+	}
+
 	// Serialize the struct to JSON and write it to the response
-	err = json.NewEncoder(w).Encode(regs)
+	err = json.NewEncoder(w).Encode(cies)
 	if err != nil {
 		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if os.Getenv("GO_ENV") != "test" {
-		for _, reg := range regs {
-			_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.Registrations, Webhooks.EventInvoke)
-		}
+
+	for _, cie := range cies {
+		_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.Registrations, Webhooks.EventInvoke)
 	}
 }

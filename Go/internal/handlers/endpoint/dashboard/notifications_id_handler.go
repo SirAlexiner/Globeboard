@@ -44,7 +44,7 @@ func handleNotifGetRequest(w http.ResponseWriter, r *http.Request) {
 	hook, err := db.GetSpecificWebhook(ID, UUID)
 	if err != nil {
 		log.Print("Error getting document from database: ", err)
-		http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+		http.Error(w, "Error retrieving data from database", http.StatusNotFound)
 		return
 	}
 

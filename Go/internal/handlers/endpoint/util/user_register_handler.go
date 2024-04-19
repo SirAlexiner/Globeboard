@@ -2,8 +2,8 @@ package util
 
 import (
 	"context"
+	"encoding/json"
 	"firebase.google.com/go/auth"
-	"fmt"
 	authenticate "globeboard/auth"
 	"globeboard/db"
 	_func "globeboard/internal/func"
@@ -36,7 +36,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error initializing Firebase Auth", http.StatusInternalServerError)
 		return
 	}
-	name := r.FormValue("name")
+	name := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
@@ -65,7 +65,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("content-type", "text/html")
+	w.Header().Set("content-type", "application/json")
 
 	UDID := _func.GenerateUID(constants.DocIdLength)
 	key := _func.GenerateAPIKey(constants.ApiKeyLength)
@@ -77,18 +77,27 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = fmt.Fprintf(w, "Successfully registered user: %s\n"+
-		"API Key: %s \n\n"+
-		"To delete and get a new API Key utilize: Authorization: \"%v\" at:\n<a href=\"/util/v1/key\">/util/v1/key</a>", u.DisplayName, key, u.UID)
+	response := struct {
+		Token  string `json:"token"`
+		UserID string `json:"userid"`
+	}{
+		Token:  key,
+		UserID: u.UID,
+	}
+
+	w.WriteHeader(http.StatusCreated)
+
+	encoder := json.NewEncoder(w)
+	err = encoder.Encode(response)
 	if err != nil {
-		log.Print("Error writing response to ResponseWriter: ", err)
-		http.Error(w, ISE, http.StatusInternalServerError)
+		log.Printf("Error encoding JSON response: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 }
 
 func isValidEmail(email string) bool {
-	regex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	regex := regexp.MustCompile(`(?i)^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 	return regex.MatchString(email)
 }
 

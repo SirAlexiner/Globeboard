@@ -44,7 +44,7 @@ func getFirestoreClient() (*firestore.Client, error) {
 	client, err := app.Firestore(ctx)
 	if err != nil {
 		// Logging the error
-		log.Println("Credentials file: '" + os.Getenv("FIREBASE_CREDENTIALS_FILE") + "' lead to an error.")
+		log.Print("Firestore reported an error: ", err)
 		return nil, err
 	}
 
@@ -72,36 +72,34 @@ func TestDBConnection() string {
 		"lastChecked": firestore.ServerTimestamp,
 	}, firestore.MergeAll)
 
-	if err != nil {
-		grpcStatusCode := status.Code(err)
-		switch grpcStatusCode {
-		case codes.Canceled:
-			return fmt.Sprintf("%d %s", http.StatusRequestTimeout, http.StatusText(http.StatusRequestTimeout))
-		case codes.DeadlineExceeded:
-			return fmt.Sprintf("%d %s", http.StatusGatewayTimeout, http.StatusText(http.StatusGatewayTimeout))
-		case codes.PermissionDenied:
-			return fmt.Sprintf("%d %s", http.StatusForbidden, http.StatusText(http.StatusForbidden))
-		case codes.NotFound:
-			// This might indicate the collection or document does not exist,
-			//which for this purpose is treated as a connection success
-			// since the error was Firestore-specific and not network or permission related.
-			return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
-		case codes.ResourceExhausted:
-			return fmt.Sprintf("%d %s", http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
-		case codes.Unauthenticated:
-			return fmt.Sprintf("%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
-		case codes.Unavailable:
-			return fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable))
-		case codes.Unknown, codes.Internal:
-			return fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		default:
-			// For any other codes, return a generic HTTP 500 error
-			return fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+	grpcStatusCode := status.Code(err)
+	switch grpcStatusCode {
+	case codes.OK:
+		return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
+	case codes.Canceled:
+		return fmt.Sprintf("%d %s", http.StatusRequestTimeout, http.StatusText(http.StatusRequestTimeout))
+	case codes.DeadlineExceeded:
+		return fmt.Sprintf("%d %s", http.StatusGatewayTimeout, http.StatusText(http.StatusGatewayTimeout))
+	case codes.PermissionDenied:
+		return fmt.Sprintf("%d %s", http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	case codes.NotFound:
+		// This might indicate the collection or document does not exist,
+		//which for this purpose is treated as a connection success
+		// since the error was Firestore-specific and not network or permission related.
+		return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
+	case codes.ResourceExhausted:
+		return fmt.Sprintf("%d %s", http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
+	case codes.Unauthenticated:
+		return fmt.Sprintf("%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+	case codes.Unavailable:
+		return fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable))
+	case codes.Unknown, codes.Internal:
+		return fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	default:
+		// For any other codes, return a generic HTTP 500 error
+		return fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	// If no error, the document update was successful, indicating good connectivity and permissions.
-	return fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK))
 }
 
 func AddApiKey(docID, UUID string, key string) error {
@@ -151,7 +149,7 @@ func AddApiKey(docID, UUID string, key string) error {
 	return nil
 }
 
-func DeleteApiKey(apiKey string) error {
+func DeleteApiKey(UUID, apiKey string) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -167,7 +165,7 @@ func DeleteApiKey(apiKey string) error {
 	// Create a reference to the Firestore collection
 	ref := client.Collection(Firestore.ApiKeyCollection)
 
-	iter := ref.Where("APIKey", "==", apiKey).Limit(1).Documents(ctx)
+	iter := ref.Where("UUID", "==", UUID).Where("APIKey", "==", apiKey).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var docID string
@@ -249,7 +247,7 @@ func GetAPIKeyUUID(apiKey string) string {
 	}
 }
 
-func AddRegistration(docID string, data *structs.CountryInfoGet) error {
+func AddRegistration(docID string, data *structs.CountryInfoInternal) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
@@ -281,16 +279,18 @@ func AddRegistration(docID string, data *structs.CountryInfoGet) error {
 	return nil
 }
 
-func GetRegistrations(UUID string) ([]*structs.CountryInfoGet, error) {
+func GetRegistrations(UUID string) ([]*structs.CountryInfoInternal, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := client.Close(); err != nil {
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
 			log.Printf(FirebaseClosingErr, err)
+			return
 		}
-	}()
+	}(client)
 
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
@@ -302,10 +302,10 @@ func GetRegistrations(UUID string) ([]*structs.CountryInfoGet, error) {
 		return nil, err
 	}
 
-	var cis []*structs.CountryInfoGet
+	var cis []*structs.CountryInfoInternal
 
 	for _, doc := range docs {
-		var ci *structs.CountryInfoGet
+		var ci *structs.CountryInfoInternal
 		if err := doc.DataTo(&ci); err != nil {
 			log.Printf(ParsingError, err)
 			return nil, err
@@ -316,16 +316,18 @@ func GetRegistrations(UUID string) ([]*structs.CountryInfoGet, error) {
 	return cis, nil
 }
 
-func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoGet, error) {
+func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoInternal, error) {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := client.Close(); err != nil {
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
 			log.Printf(FirebaseClosingErr, err)
+			return
 		}
-	}()
+	}(client)
 
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
@@ -333,7 +335,7 @@ func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoGet, error) {
 	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
-	var ci *structs.CountryInfoGet
+	var ci *structs.CountryInfoInternal
 
 	// Iterate over the query results
 	for {
@@ -354,16 +356,18 @@ func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoGet, error) {
 	return nil, errors.New("no registration with that ID was found")
 }
 
-func UpdateRegistration(ID, UUID string, data *structs.CountryInfoGet) error {
+func UpdateRegistration(ID, UUID string, data *structs.CountryInfoInternal) error {
 	client, err := getFirestoreClient()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := client.Close(); err != nil {
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
 			log.Printf(FirebaseClosingErr, err)
+			return
 		}
-	}()
+	}(client)
 
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.RegistrationCollection)
@@ -475,11 +479,13 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := client.Close(); err != nil {
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
 			log.Printf(FirebaseClosingErr, err)
+			return
 		}
-	}()
+	}(client)
 
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
@@ -510,11 +516,13 @@ func GetWebhooksUser(UUID string) ([]structs.WebhookResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := client.Close(); err != nil {
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
 			log.Printf(FirebaseClosingErr, err)
+			return
 		}
-	}()
+	}(client)
 
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
@@ -545,11 +553,13 @@ func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := client.Close(); err != nil {
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
 			log.Printf(FirebaseClosingErr, err)
+			return
 		}
-	}()
+	}(client)
 
 	// Reference to the Firestore collection
 	ref := client.Collection(Firestore.WebhookCollection)
@@ -569,7 +579,6 @@ func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
 			return nil, fmt.Errorf(IterationFailed, err)
 		}
 		if err := doc.DataTo(&webhook); err != nil {
-			log.Println("Error retrieving document:", err)
 			return nil, err
 		}
 		return webhook, nil

@@ -12,7 +12,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 )
 
 const (
@@ -57,7 +56,7 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 	reg, err := db.GetSpecificRegistration(ID, UUID)
 	if err != nil {
 		log.Print("Error getting document from database: ", err)
-		http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+		http.Error(w, "Error retrieving data from database", http.StatusNotFound)
 		return
 	}
 
@@ -67,17 +66,22 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
+	cie := new(structs.CountryInfoExternal)
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
+
 	// Serialize the struct to JSON and write it to the response
-	err = json.NewEncoder(w).Encode(reg)
+	err = json.NewEncoder(w).Encode(cie)
 	if err != nil {
 		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if os.Getenv("GO_ENV") != "test" {
-		_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventInvoke)
-	}
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventInvoke)
 }
 
 // handleRegPatchRequest handles PUT requests to Update a registered country.
@@ -106,37 +110,61 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	countryInfo, err, errcode := patchCountryInformation(r, ID, UUID)
+	ci, err, errcode := patchCountryInformation(r, ID, UUID)
 	if err != nil {
 		err := fmt.Sprintf("Error patching data together: %v", err)
 		http.Error(w, err, errcode)
 		return
 	}
 
-	err = _func.ValidateCountryInfo(countryInfo)
+	err = _func.ValidateCountryInfo(ci)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = db.UpdateRegistration(ID, UUID, countryInfo)
+	err = db.UpdateRegistration(ID, UUID, ci)
 	if err != nil {
 		err := fmt.Sprintf("Error saving patched data to database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
-
-	if os.Getenv("GO_ENV") != "test" {
-		_func.LoopSendWebhooksRegistrations(UUID, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
-	}
-}
-
-func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoGet, error, int) {
 	reg, err := db.GetSpecificRegistration(ID, UUID)
 	if err != nil {
-		return nil, err, http.StatusInternalServerError
+		err := fmt.Sprint("Error retrieving updated document: ", err)
+		http.Error(w, err, http.StatusNotFound)
+		return
+	}
+
+	cie := new(structs.CountryInfoExternal)
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
+
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+
+	response := map[string]interface{}{
+		"lastChange": cie.Lastchange,
+	}
+
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		// Handle error
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventChange)
+}
+
+func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoInternal, error, int) {
+	reg, err := db.GetSpecificRegistration(ID, UUID)
+	if err != nil {
+		return nil, err, http.StatusNotFound
 	}
 
 	bytes, err := json.Marshal(reg)
@@ -179,8 +207,8 @@ func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.Country
 		return nil, err, http.StatusInternalServerError
 	}
 
-	// Unmarshal the JSON data into the CountryInfoGet struct.
-	var countryInfo *structs.CountryInfoGet
+	// Unmarshal the JSON data into the CountryInfoInternal struct.
+	var countryInfo *structs.CountryInfoInternal
 	err = json.Unmarshal(jsonData, &countryInfo)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
@@ -249,7 +277,12 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
-	if os.Getenv("GO_ENV") != "test" {
-		_func.LoopSendWebhooksRegistrations(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventDelete)
-	}
+	cie := new(structs.CountryInfoExternal)
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
+
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventDelete)
 }

@@ -28,17 +28,37 @@ func handleApiKeyDeleteRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	token := query.Get("token")
 
+	UUID := r.Header.Get("Authorization")
+
+	ctx := context.Background()
+
+	client, err := authenticate.GetFireBaseAuthClient()
+	if err != nil {
+		log.Printf("error getting Auth client: %v\n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Verify the ID token
+	_, err = client.GetUser(ctx, UUID)
+	if err != nil {
+		log.Printf("error verifying UUID: %v\n", err)
+		http.Error(w, "Not Authorized", http.StatusUnauthorized)
+		return
+	}
+
 	if token == "" {
 		http.Error(w, "Please specify API Key to delete: '?token={API_Key}' ", http.StatusBadRequest)
 		return
 	}
 
-	err := db.DeleteApiKey(token)
+	err = db.DeleteApiKey(UUID, token)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
@@ -75,8 +95,12 @@ func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 
+	response := map[string]string{
+		"token": key,
+	}
+
 	// Encode books as JSON and send the response.
-	if err := json.NewEncoder(w).Encode(key); err != nil {
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Error encoding JSON response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

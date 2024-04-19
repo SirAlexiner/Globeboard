@@ -5,7 +5,6 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"google.golang.org/api/option"
-	"log"
 	"os"
 )
 
@@ -19,16 +18,12 @@ func GetFireBaseAuthClient() (*auth.Client, error) {
 	sa := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		log.Println("Credentials not found: " + os.Getenv("FIREBASE_CREDENTIALS_FILE"))
-		log.Println("Error on getting the application")
 		return nil, err
 	}
 
 	//No initial error, so a client is used to gather other information
 	client, err := app.Auth(ctx)
 	if err != nil {
-		// Logging the error
-		log.Println("Credentials file: '" + os.Getenv("FIREBASE_CREDENTIALS_FILE") + "' lead to an error.")
 		return nil, err
 	}
 

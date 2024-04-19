@@ -10,7 +10,15 @@ type APIKey struct {
 
 // Registrations Structs
 
-type CountryInfoGet struct {
+type CountryInfoExternal struct {
+	ID         string    `json:"id"`
+	Country    string    `json:"country"`
+	IsoCode    string    `json:"isoCode"`
+	Features   Features  `json:"features"`
+	Lastchange time.Time `json:"lastchange"`
+}
+
+type CountryInfoInternal struct {
 	ID         string    `json:"id"`
 	UUID       string    `json:"uuid"`
 	Country    string    `json:"country"`
@@ -40,18 +48,18 @@ type DashboardResponse struct {
 }
 
 type FeaturesDashboard struct {
-	Temperature      string               `json:"temperature"`
-	Precipitation    string               `json:"precipitation"`
-	Capital          string               `json:"capital"`
-	Coordinates      CoordinatesDashboard `json:"coordinates"`
-	Population       int                  `json:"population"`
-	Area             string               `json:"area"`
-	TargetCurrencies map[string]float64   `json:"targetCurrencies"`
+	Temperature      string                `json:"temperature,omitempty"`
+	Precipitation    string                `json:"precipitation,omitempty"`
+	Capital          string                `json:"capital,omitempty"`
+	Coordinates      *CoordinatesDashboard `json:"coordinates,omitempty"`
+	Population       int                   `json:"population,omitempty"`
+	Area             string                `json:"area,omitempty"`
+	TargetCurrencies map[string]float64    `json:"targetCurrencies,omitempty"`
 }
 
 type CoordinatesDashboard struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
+	Latitude  string `json:"latitude,omitempty"`
+	Longitude string `json:"longitude,omitempty"`
 }
 
 // Status structs

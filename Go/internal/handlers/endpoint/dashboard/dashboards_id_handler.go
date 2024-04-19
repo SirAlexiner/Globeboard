@@ -9,7 +9,6 @@ import (
 	"globeboard/internal/utils/structs"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -18,8 +17,8 @@ const (
 	RetrivalError = "Error getting country information"
 )
 
-// DashboardsHandler handles requests to the book count API endpoint.
-func DashboardsHandler(w http.ResponseWriter, r *http.Request) {
+// DashboardsIdHandler handles requests to the book count API endpoint.
+func DashboardsIdHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		handleDashboardGetRequest(w, r)
@@ -94,14 +93,18 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if os.Getenv("GO_ENV") != "test" {
-		_func.LoopSendWebhooksDashboard(UUID, dr)
-	}
+	_func.LoopSendWebhooksDashboard(UUID, dr)
 }
 
-func getWeatherInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *structs.DashboardResponse) bool {
+func getWeatherInfo(w http.ResponseWriter, reg *structs.CountryInfoInternal, dr *structs.DashboardResponse) bool {
 	if reg.Features.Temperature {
-		temp, err := _func.GetTemp(dr.Features.Coordinates)
+		coords, err := _func.GetCoordinates(reg.IsoCode)
+		if err != nil {
+			log.Print("Error getting Coordinates Information: ", err)
+			http.Error(w, RetrivalError, http.StatusInternalServerError)
+			return true
+		}
+		temp, err := _func.GetTemp(coords)
 		if err != nil {
 			log.Print("Error getting Temperature Information: ", err)
 			http.Error(w, RetrivalError, http.StatusInternalServerError)
@@ -122,7 +125,7 @@ func getWeatherInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *stru
 	return false
 }
 
-func getCurrencyInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *structs.DashboardResponse) bool {
+func getCurrencyInfo(w http.ResponseWriter, reg *structs.CountryInfoInternal, dr *structs.DashboardResponse) bool {
 	if reg.Features.TargetCurrencies != nil && len(reg.Features.TargetCurrencies) != 0 {
 		exchangeRate, err := _func.GetExchangeRate(reg.IsoCode, reg.Features.TargetCurrencies)
 		if err != nil {
@@ -135,7 +138,7 @@ func getCurrencyInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *str
 	return false
 }
 
-func getCountryInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *structs.DashboardResponse) bool {
+func getCountryInfo(w http.ResponseWriter, reg *structs.CountryInfoInternal, dr *structs.DashboardResponse) bool {
 	if reg.Features.Capital {
 		capital, err := _func.GetCapital(reg.IsoCode)
 		if err != nil {
@@ -153,7 +156,7 @@ func getCountryInfo(w http.ResponseWriter, reg *structs.CountryInfoGet, dr *stru
 			http.Error(w, RetrivalError, http.StatusInternalServerError)
 			return true
 		}
-		dr.Features.Coordinates = coords
+		dr.Features.Coordinates = &coords
 	}
 
 	if reg.Features.Population {

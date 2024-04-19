@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type OpenMeteoTemp struct {
@@ -17,6 +18,10 @@ type OpenMeteoTemp struct {
 		Temperature float64 `json:"temperature_2m"`
 	} `json:"current"`
 }
+
+const (
+	alphaCodes = "alpha?codes="
+)
 
 func GetTemp(coordinates structs.CoordinatesDashboard) (float64, error) {
 	response, err := http.Get(External.OpenMeteoAPI + "?latitude=" + (coordinates.Latitude) + "&longitude=" + (coordinates.Longitude) + "&current=temperature_2m")
@@ -50,7 +55,7 @@ type OpenMeteoPrecipitation struct {
 	} `json:"current"`
 }
 
-func GetPrecipitation(coordinates structs.CoordinatesDashboard) (float64, error) {
+func GetPrecipitation(coordinates *structs.CoordinatesDashboard) (float64, error) {
 	response, err := http.Get(External.OpenMeteoAPI + "?latitude=" + (coordinates.Latitude) + "&longitude=" + (coordinates.Longitude) + "&current=precipitation")
 	if err != nil {
 		return 0, err
@@ -82,7 +87,7 @@ type Country struct {
 }
 
 func GetCapital(isocode string) (string, error) {
-	response, err := http.Get(External.CountriesAPI + isocode + "&fields=capital")
+	response, err := http.Get(External.CountriesAPI + alphaCodes + isocode + "&fields=capital")
 	if err != nil {
 		return "nil", err
 	}
@@ -114,7 +119,7 @@ type CountryCoordinates struct {
 func GetCoordinates(isocode string) (structs.CoordinatesDashboard, error) {
 	var empty = structs.CoordinatesDashboard{}
 
-	response, err := http.Get(External.CountriesAPI + isocode + "&fields=latlng")
+	response, err := http.Get(External.CountriesAPI + alphaCodes + isocode + "&fields=latlng")
 	if err != nil {
 		return empty, err
 	}
@@ -148,7 +153,7 @@ type CountryPopulation struct {
 }
 
 func GetPopulation(isocode string) (int, error) {
-	response, err := http.Get(External.CountriesAPI + isocode + "&fields=population")
+	response, err := http.Get(External.CountriesAPI + alphaCodes + isocode + "&fields=population")
 	if err != nil {
 		return 0, err
 	}
@@ -178,7 +183,7 @@ type CountryArea struct {
 }
 
 func GetArea(isocode string) (float64, error) {
-	response, err := http.Get(External.CountriesAPI + isocode + "&fields=area")
+	response, err := http.Get(External.CountriesAPI + alphaCodes + isocode + "&fields=area")
 	if err != nil {
 		return 0, err
 	}
@@ -221,7 +226,7 @@ func GetExchangeRate(isocode string, currencies []string) (map[string]float64, e
 	}
 	exchangeRate := make(map[string]float64)
 	for _, currency := range currencies {
-		exchangeRate[currency] = exchangeRateList[currency]
+		exchangeRate[strings.ToUpper(currency)] = exchangeRateList[strings.ToUpper(currency)]
 	}
 
 	return exchangeRate, nil
@@ -254,7 +259,7 @@ func fetchCurrencyRates(currency string) (map[string]float64, error) {
 }
 
 func getExchangeRateList(isocode string) (map[string]float64, error) {
-	response, err := http.Get(External.CountriesAPI + isocode + "&fields=currencies")
+	response, err := http.Get(External.CountriesAPI + alphaCodes + isocode + "&fields=currencies")
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +281,6 @@ func getExchangeRateList(isocode string) (map[string]float64, error) {
 	}
 
 	for currency := range currencyData[0].Currencies {
-		log.Print(currency)
 		rates, err := fetchCurrencyRates(currency)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching currency rates: %v", err)

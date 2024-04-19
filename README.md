@@ -78,7 +78,7 @@ This code was developed by:
 | Status Code | `204 No Content` |
 |:------------|:-----------------|
 
-### Delete your API key:
+### Get a New API key: (Old must be deleted first, only allowed one)
 
 ```http
   GET /util/v1/key/
@@ -99,11 +99,13 @@ This code was developed by:
 }
 ```
 
-### Get a New API key: (Old must be deleted first, only allowed one)
+### Delete your API key:
 
 ```http
   DELETE /util/v1/key/?token={token}
 ```
+| Authorization | `Your UUID` |
+|:--------------|:------------|
 
 | Parameter | Type     | Description                               |
 |:----------|:---------|:------------------------------------------|
@@ -537,7 +539,6 @@ To run this project, you will need to add the following environment variables to
 `PORT` - Port to run the project on.
 
 `FIREBASE_CREDENTIALS_FILE` - Path to your Firebase credentials file.
-
 
 ## Run Locally
 
