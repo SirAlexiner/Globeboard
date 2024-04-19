@@ -11,7 +11,9 @@ GlobeBoard Go REST API is a webapplication REST API service designed to provide 
 ## Authors
 This code was developed by:
 - Torgrim Thorsen [@Nintendo_Alex](https://git.gvk.idi.ntnu.no/Nintendo_Alex)
-  In collaboration with:
+
+In collaboration with:
+
 - Robin Jahre [@robinja](https://git.gvk.idi.ntnu.no/Nrobinja)
 - Phrot Vedal [@BossTheModern](https://git.gvk.idi.ntnu.no/BossTheModern)
 ## Features
