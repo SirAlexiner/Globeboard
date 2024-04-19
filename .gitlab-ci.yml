@@ -45,10 +45,10 @@ Deploy:
   stage: Deploy
   before_script:
     - cd ./Go/
+    - docker compose down
     - apk add --no-cache curl bash
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash > /dev/null 2>&1
   script:
     - docker compose up globeboard -d
-  after_script:
-    - cd ./Go/
-    - docker compose down
+  only:
+    - main
