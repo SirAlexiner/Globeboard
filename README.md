@@ -5,7 +5,7 @@
 
 [![pipeline status](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/badges/main/pipeline.svg)](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/-/commits/main)
 [![coverage report](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/badges/main/coverage.svg)](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/-/commits/main)
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/license/mit/)
+[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC_BY--NC--ND_4.0-green.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
 GlobeBoard Go REST API is a webapplication REST API service designed to provide GeoLocational Information.
 ## Authors
