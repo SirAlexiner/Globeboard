@@ -123,12 +123,6 @@ func GetCoordinates(isocode string) (structs.CoordinatesDashboard, error) {
 	if err != nil {
 		return empty, err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Print("Error closing countries api response body @ dashboardFunctions:GetCapital: ", err)
-		}
-	}(response.Body)
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -157,12 +151,6 @@ func GetPopulation(isocode string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Print("Error closing countries api response body @ dashboardFunctions:GetPopulation: ", err)
-		}
-	}(response.Body)
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -232,7 +220,6 @@ func GetExchangeRate(isocode string, currencies []string) (map[string]float64, e
 	return exchangeRate, nil
 }
 
-// fetchCurrencyRates sends an HTTP GET request to the currency rates API and extracts the rates as a map
 func fetchCurrencyRates(currency string) (map[string]float64, error) {
 	response, err := http.Get(External.CurrencyAPI + currency)
 	if err != nil {
@@ -263,12 +250,6 @@ func getExchangeRateList(isocode string) (map[string]float64, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Print("Error closing countries api response body @ dashboardFunctions:getExchangeRateList: ", err)
-		}
-	}(response.Body)
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -288,5 +269,5 @@ func getExchangeRateList(isocode string) (map[string]float64, error) {
 		return rates, nil
 	}
 
-	return nil, errors.New("no currency currency found")
+	return nil, errors.New("no currency data found")
 }

@@ -64,7 +64,6 @@ type CoordinatesDashboard struct {
 
 // Status structs
 
-// StatusResponse represents the status response structure.
 type StatusResponse struct {
 	CountriesApi    string `json:"countries_api"`
 	MeteoApi        string `json:"meteo_api"`

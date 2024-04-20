@@ -12,7 +12,6 @@ import (
 	"net/http"
 )
 
-// NotificationsHandler handles requests to retrieve readership dashboard for a specific language.
 func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -76,16 +75,12 @@ func handleNotifPostRequest(w http.ResponseWriter, r *http.Request) {
 		"id": hook.ID,
 	}
 
-	// Set Content-Type header
 	w.Header().Set(ContentType, ApplicationJSON)
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusCreated)
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -106,21 +101,17 @@ func handleNotifGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	regs, err := db.GetWebhooksUser(UUID)
 	if err != nil {
-		errmsg := fmt.Sprint("Error retrieving document from database: ", err)
+		errmsg := fmt.Sprint("Error retrieving webhooks from database: ", err)
 		http.Error(w, errmsg, http.StatusInternalServerError)
 		return
 	}
 
-	// Set Content-Type header
 	w.Header().Set(ContentType, ApplicationJSON)
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(regs)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

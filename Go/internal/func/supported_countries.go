@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// getSupportedCountries fetches countries with their common names and cca2 codes.
+// getSupportedCountries fetches supported countries with their common names and cca2 codes.
 func getSupportedCountries() (map[string]string, error) {
 	url := fmt.Sprintf("%sall?fields=name,cca2", External.CountriesAPI)
 	var responseData []struct {
@@ -54,8 +54,9 @@ func ValidateCountryInfo(ci *structs.CountryInfoInternal) error {
 	}
 
 	if !ci.Features.Temperature && !ci.Features.Precipitation && !ci.Features.Capital &&
-		!ci.Features.Coordinates && !ci.Features.Population && !ci.Features.Area {
-		return errors.New("at least one feature must be true")
+		!ci.Features.Coordinates && !ci.Features.Population && !ci.Features.Area &&
+		(ci.Features.TargetCurrencies == nil || len(ci.Features.TargetCurrencies) == 0) {
+		return errors.New("at least one feature must be populated")
 	}
 	return nil
 }

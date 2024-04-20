@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.2
 FROM golang:1.22 AS builder
 
+# Define Authors
 LABEL authors="Torgrim Thorsen"
 
 # Set destination for COPY
@@ -21,6 +22,7 @@ FROM alpine:3.19
 # Install CA certificates.
 RUN apk --no-cache add ca-certificates
 
+# Set new Working Directory.
 WORKDIR /root/
 
 # Copy the pre-built binary file from the previous stage.

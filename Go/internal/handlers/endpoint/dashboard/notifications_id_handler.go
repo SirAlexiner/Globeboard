@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"globeboard/db"
-	"log"
 	"net/http"
 )
 
-// NotificationsIdHandler handles requests to retrieve readership dashboard for a specific language.
 func NotificationsIdHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -36,28 +34,24 @@ func handleNotifGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	hook, err := db.GetSpecificWebhook(ID, UUID)
 	if err != nil {
-		log.Print("Error getting document from database: ", err)
-		http.Error(w, "Error retrieving data from database", http.StatusNotFound)
+		err := fmt.Sprintf("Error getting document from database: %v", err)
+		http.Error(w, err, http.StatusNotFound)
 		return
 	}
 
-	// Set Content-Type header
 	w.Header().Set(ContentType, ApplicationJSON)
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(hook)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -77,7 +71,7 @@ func handleNotifDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}

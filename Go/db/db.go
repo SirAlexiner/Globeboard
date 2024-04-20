@@ -4,7 +4,6 @@ import (
 	"cloud.google.com/go/firestore"
 	"context"
 	"errors"
-	firebase "firebase.google.com/go"
 	"fmt"
 	authenticate "globeboard/auth"
 	"globeboard/internal/utils/constants/Firestore"
@@ -26,48 +25,24 @@ const (
 
 var (
 	// Use a context for Firestore operations
-	ctx = context.Background()
+	ctx    = context.Background()
+	Client *firestore.Client
+	err    error
 )
 
-func getFirestoreClient() (*firestore.Client, error) {
-
-	// Using the credential file
+func init() {
 	sa := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_FILE"))
-	app, err := firebase.NewApp(ctx, nil, sa)
+	Client, err = firestore.NewClient(ctx, os.Getenv("FIRESTORE_PROJECT_ID"), sa)
 	if err != nil {
-		log.Println("Credentials not found: " + os.Getenv("FIREBASE_CREDENTIALS_FILE"))
-		log.Println("Error on getting the application")
-		return nil, err
+		log.Panic("Firestore was unable to initialize: ", err)
 	}
-
-	//No initial error, so a client is used to gather other information
-	client, err := app.Firestore(ctx)
-	if err != nil {
-		// Logging the error
-		log.Print("Firestore reported an error: ", err)
-		return nil, err
-	}
-
-	// No errors, so we return the test client and no error
-	return client, nil
 }
 
 func TestDBConnection() string {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return fmt.Sprintf("%d %s: %v", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), err)
-	}
-	defer func() {
-		if err := client.Close(); err != nil {
-			log.Printf("Error closing Firestore client: %v", err)
-		}
-	}()
-
 	collectionID := "Connectivity"
 	documentID := "DB_Connection_Test"
 
-	// Attempt to update a specific document to test connectivity and permissions.
-	_, err = client.Collection(collectionID).Doc(documentID).Set(ctx, map[string]interface{}{
+	_, err = Client.Collection(collectionID).Doc(documentID).Set(ctx, map[string]interface{}{
 		"PSA":         "DO NOT DELETE THIS DOCUMENT!",
 		"lastChecked": firestore.ServerTimestamp,
 	}, firestore.MergeAll)
@@ -103,33 +78,19 @@ func TestDBConnection() string {
 }
 
 func AddApiKey(docID, UUID string, key string) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.ApiKeyCollection)
+	ref := Client.Collection(Firestore.ApiKeyCollection)
 
 	iter := ref.Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	for {
-		doc, err := iter.Next()
+		_, err := iter.Next()
 		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
 			return fmt.Errorf(IterationFailed, err)
 		}
-		_ = doc
 		err = errors.New("API key is already registered to user")
 		return err
 	}
@@ -139,7 +100,6 @@ func AddApiKey(docID, UUID string, key string) error {
 		APIKey: key,
 	}
 
-	// Create a new document and add it to the firebase
 	_, err = ref.Doc(docID).Set(ctx, apiKeys)
 	if err != nil {
 		err := fmt.Errorf("error saving API key to Database: %v", err)
@@ -150,20 +110,7 @@ func AddApiKey(docID, UUID string, key string) error {
 }
 
 func DeleteApiKey(UUID, apiKey string) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.ApiKeyCollection)
+	ref := Client.Collection(Firestore.ApiKeyCollection)
 
 	iter := ref.Where("UUID", "==", UUID).Where("APIKey", "==", apiKey).Limit(1).Documents(ctx)
 	defer iter.Stop()
@@ -180,12 +127,10 @@ func DeleteApiKey(UUID, apiKey string) error {
 		docID = doc.Ref.ID
 	}
 
-	// If docID is empty, the API key does not exist in Firestore
 	if docID == "" {
 		return errors.New("API key not found")
 	}
 
-	// Delete the document with the provided API key
 	_, err = ref.Doc(docID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete API Key: %v", err)
@@ -195,29 +140,13 @@ func DeleteApiKey(UUID, apiKey string) error {
 }
 
 func GetAPIKeyUUID(apiKey string) string {
-	client, err := getFirestoreClient()
-	if err != nil {
-		log.Printf("Error retriving firestore client: %v", err)
-		return ""
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
+	ref := Client.Collection(Firestore.ApiKeyCollection)
 
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.ApiKeyCollection)
-
-	// Query Firestore to check if the API key exists
 	iter := ref.Where("APIKey", "==", apiKey).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var key structs.APIKey
 
-	// Iterate over the query results
 	for {
 		doc, err := iter.Next()
 		if errors.Is(err, iterator.Done) {
@@ -232,13 +161,8 @@ func GetAPIKeyUUID(apiKey string) string {
 			return ""
 		}
 	}
-	clientAuth, err := authenticate.GetFireBaseAuthClient() // Assuming you have your initFirebase function from earlier
-	if err != nil {
-		log.Printf("Error retriving firebase auth client: %v", err)
-		return ""
-	}
 
-	_, err = clientAuth.GetUser(ctx, key.UUID)
+	_, err = authenticate.Client.GetUser(ctx, key.UUID)
 	if err != nil {
 		log.Println("Error getting user:", err)
 		return ""
@@ -248,22 +172,8 @@ func GetAPIKeyUUID(apiKey string) string {
 }
 
 func AddRegistration(docID string, data *structs.CountryInfoInternal) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
+	ref := Client.Collection(Firestore.RegistrationCollection)
 
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.RegistrationCollection)
-
-	// Create a new document and add to it
 	_, err = ref.Doc(docID).Set(ctx, map[string]interface{}{
 		"ID":         data.ID,
 		"UUID":       data.UUID,
@@ -280,22 +190,8 @@ func AddRegistration(docID string, data *structs.CountryInfoInternal) error {
 }
 
 func GetRegistrations(UUID string) ([]*structs.CountryInfoInternal, error) {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return nil, err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
+	ref := Client.Collection(Firestore.RegistrationCollection)
 
-	// Reference to the Firestore collection
-	ref := client.Collection(Firestore.RegistrationCollection)
-
-	// Query all documents
 	docs, _ := ref.Where("UUID", "==", UUID).OrderBy("Lastchange", firestore.Desc).Documents(ctx).GetAll()
 	if err != nil {
 		log.Printf("Error fetching Registration: %v\n", err)
@@ -317,27 +213,13 @@ func GetRegistrations(UUID string) ([]*structs.CountryInfoInternal, error) {
 }
 
 func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoInternal, error) {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return nil, err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Reference to the Firestore collection
-	ref := client.Collection(Firestore.RegistrationCollection)
+	ref := Client.Collection(Firestore.RegistrationCollection)
 
 	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var ci *structs.CountryInfoInternal
 
-	// Iterate over the query results
 	for {
 		doc, err := iter.Next()
 		if errors.Is(err, iterator.Done) {
@@ -357,25 +239,11 @@ func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoInternal, err
 }
 
 func UpdateRegistration(ID, UUID string, data *structs.CountryInfoInternal) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Reference to the Firestore collection
-	ref := client.Collection(Firestore.RegistrationCollection)
+	ref := Client.Collection(Firestore.RegistrationCollection)
 
 	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
-	// Iterate over the query results
 	for {
 		doc, err := iter.Next()
 		if errors.Is(err, iterator.Done) {
@@ -403,20 +271,7 @@ func UpdateRegistration(ID, UUID string, data *structs.CountryInfoInternal) erro
 }
 
 func DeleteRegistration(ID, UUID string) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.RegistrationCollection)
+	ref := Client.Collection(Firestore.RegistrationCollection)
 
 	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
@@ -433,12 +288,10 @@ func DeleteRegistration(ID, UUID string) error {
 		docID = doc.Ref.ID
 	}
 
-	// If docID is empty, the API key does not exist in Firestore
 	if docID == "" {
 		return errors.New("ID match was not found")
 	}
 
-	// Delete the document with the provided API key
 	_, err = ref.Doc(docID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete document: %v", err)
@@ -449,22 +302,8 @@ func DeleteRegistration(ID, UUID string) error {
 }
 
 func AddWebhook(docID string, webhook *structs.WebhookGet) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
+	ref := Client.Collection(Firestore.WebhookCollection)
 
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.WebhookCollection)
-
-	// Create a new document and add it to the
 	_, err = ref.Doc(docID).Set(ctx, webhook)
 	if err != nil {
 		log.Printf(FirebaseClosingErr, err)
@@ -475,22 +314,8 @@ func AddWebhook(docID string, webhook *structs.WebhookGet) error {
 }
 
 func GetAllWebhooks() ([]structs.WebhookGet, error) {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return nil, err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
+	ref := Client.Collection(Firestore.WebhookCollection)
 
-	// Reference to the Firestore collection
-	ref := client.Collection(Firestore.WebhookCollection)
-
-	// Query all documents
 	docs, err := ref.Documents(ctx).GetAll()
 	if err != nil {
 		log.Printf("Error fetching all stored Webhooks: %v\n", err)
@@ -512,22 +337,8 @@ func GetAllWebhooks() ([]structs.WebhookGet, error) {
 }
 
 func GetWebhooksUser(UUID string) ([]structs.WebhookResponse, error) {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return nil, err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
+	ref := Client.Collection(Firestore.WebhookCollection)
 
-	// Reference to the Firestore collection
-	ref := client.Collection(Firestore.WebhookCollection)
-
-	// Query all documents
 	docs, err := ref.Where("UUID", "==", UUID).Documents(ctx).GetAll()
 	if err != nil {
 		log.Printf("Error fetching users webhooks: %v\n", err)
@@ -549,27 +360,13 @@ func GetWebhooksUser(UUID string) ([]structs.WebhookResponse, error) {
 }
 
 func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return nil, err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Reference to the Firestore collection
-	ref := client.Collection(Firestore.WebhookCollection)
+	ref := Client.Collection(Firestore.WebhookCollection)
 
 	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
 
 	var webhook *structs.WebhookResponse
 
-	// Iterate over the query results
 	for {
 		doc, err := iter.Next()
 		if errors.Is(err, iterator.Done) {
@@ -588,20 +385,7 @@ func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
 }
 
 func DeleteWebhook(ID, UUID string) error {
-	client, err := getFirestoreClient()
-	if err != nil {
-		return err
-	}
-	defer func(client *firestore.Client) {
-		err := client.Close()
-		if err != nil {
-			log.Printf(FirebaseClosingErr, err)
-			return
-		}
-	}(client)
-
-	// Create a reference to the Firestore collection
-	ref := client.Collection(Firestore.WebhookCollection)
+	ref := Client.Collection(Firestore.WebhookCollection)
 
 	iter := ref.Where("ID", "==", ID).Where("UUID", "==", UUID).Limit(1).Documents(ctx)
 	defer iter.Stop()
@@ -618,12 +402,10 @@ func DeleteWebhook(ID, UUID string) error {
 		docID = doc.Ref.ID
 	}
 
-	// If docID is empty, the API key does not exist in Firestore
 	if docID == "" {
 		return fmt.Errorf("ID match was not found")
 	}
 
-	// Delete the document with the provided API key
 	_, err = ref.Doc(docID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete document: %v", err)

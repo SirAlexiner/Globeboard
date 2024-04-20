@@ -17,7 +17,6 @@ const (
 	ISE = "Internal Server Error"
 )
 
-// UserRegistrationHandler handles HTTP POST requests
 func UserRegistrationHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -29,13 +28,6 @@ func UserRegistrationHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerUser(w http.ResponseWriter, r *http.Request) {
-
-	// Initialize Firebase
-	client, err := authenticate.GetFireBaseAuthClient() // Assuming you have your initFirebase function from earlier
-	if err != nil {
-		http.Error(w, "Error initializing Firebase Auth", http.StatusInternalServerError)
-		return
-	}
 	name := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
@@ -58,7 +50,8 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 		DisplayName(name).
 		Email(email).
 		Password(password)
-	u, err := client.CreateUser(ctx, params)
+
+	u, err := authenticate.Client.CreateUser(ctx, params)
 	if err != nil {
 		log.Printf("error creating user: %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -17,7 +17,6 @@ const (
 	RetrivalError = "Error getting country information"
 )
 
-// DashboardsIdHandler handles requests to the book count API endpoint.
 func DashboardsIdHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -28,7 +27,6 @@ func DashboardsIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleDashboardGetRequest handles GET requests to retrieve book count information.
 func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 	ID := r.PathValue("ID")
 	query := r.URL.Query()
@@ -43,7 +41,7 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
@@ -79,16 +77,12 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 	// Set the LastRetrieval time and format it to ISO8601 format to mirror Firestore Timestamp
 	dr.LastRetrieval = time.Now().UTC().Format("2006-01-02T15:04:05.999Z")
 
-	// Set Content-Type header
 	w.Header().Set("Content-Type", "application/json")
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(dr)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

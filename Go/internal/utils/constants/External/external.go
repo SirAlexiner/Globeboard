@@ -1,4 +1,4 @@
-// Package External provides external API endpoints used in the application.
+// Package External provides external API endpoints used throughout the application.
 package External
 
 // CurrencyAPI represents the endpoint for the Currency API.

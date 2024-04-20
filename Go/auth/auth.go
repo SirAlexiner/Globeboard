@@ -5,28 +5,24 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"google.golang.org/api/option"
+	"log"
 	"os"
 )
 
 var (
-	// Use a context for Firebase operations
-	ctx = context.Background()
+	ctx    = context.Background()
+	Client *auth.Client
 )
 
-func GetFireBaseAuthClient() (*auth.Client, error) {
-	// Using the credential file
+func init() {
 	sa := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_FILE"))
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		return nil, err
+		log.Panic("Firebase Failed to initialize: ", err)
 	}
 
-	//No initial error, so a client is used to gather other information
-	client, err := app.Auth(ctx)
+	Client, err = app.Auth(ctx)
 	if err != nil {
-		return nil, err
+		log.Panic("Firebase Failed to initialize Authentication client: ", err)
 	}
-
-	// No errors, so we return the test client and no error
-	return client, nil
 }

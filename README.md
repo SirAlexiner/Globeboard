@@ -197,7 +197,7 @@ In collaboration with:
 ```json
 {
   "id":         "The registration's ID",
-  "lastChange": "Firestore timestamp indicating creation (RFC3339 Format)",
+  "lastChange": "Firestore timestamp indicating creation (ISO8601 Format)",
 }
 
 ```
@@ -541,6 +541,8 @@ To run this project, you will need to add the following environment variables to
 `PORT` - Port to run the project on.
 
 `FIREBASE_CREDENTIALS_FILE` - Path to your Firebase credentials file.
+
+`FIRESTORE_PROJECT_ID` - Project ID from Google Firebase that contains Firestore.
 
 ## Run Locally
 

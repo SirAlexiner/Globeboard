@@ -18,7 +18,6 @@ const (
 	ProvideID = "Please Provide ID"
 )
 
-// RegistrationsIdHandler handles HTTP GET requests to retrieve supported languages.
 func RegistrationsIdHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -33,7 +32,6 @@ func RegistrationsIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleRegGetRequest handles GET requests to retrieve a registered country.
 func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 	ID := r.PathValue("ID")
 	query := r.URL.Query()
@@ -48,7 +46,7 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
@@ -60,10 +58,8 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set Content-Type header
 	w.Header().Set(ContentType, ApplicationJSON)
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
 	cie := new(structs.CountryInfoExternal)
@@ -73,10 +69,8 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 	cie.Features = reg.Features
 	cie.Lastchange = reg.Lastchange
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(cie)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -84,7 +78,6 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventInvoke)
 }
 
-// handleRegPatchRequest handles PUT requests to Update a registered country.
 func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 	ID := r.PathValue("ID")
 	query := r.URL.Query()
@@ -99,7 +92,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
@@ -119,7 +112,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 
 	err = _func.ValidateCountryInfo(ci)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -201,13 +194,11 @@ func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.Country
 		}
 	}
 
-	// Marshal the original data back to JSON.
 	jsonData, err := json.Marshal(originalData)
 	if err != nil {
 		return nil, err, http.StatusInternalServerError
 	}
 
-	// Unmarshal the JSON data into the CountryInfoInternal struct.
 	var countryInfo *structs.CountryInfoInternal
 	err = json.Unmarshal(jsonData, &countryInfo)
 	if err != nil {
@@ -224,9 +215,9 @@ func validatePatchData(patchData map[string]interface{}, originalData map[string
 		}
 	}
 
-	if isoCode, ok := patchData["isoCode"]; ok {
-		if isoCodeStr, isStr := isoCode.(string); isStr && isoCodeStr != "" && originalData["isoCode"] != isoCode {
-			return nil, errors.New("modification of 'isoCode' field is not allowed"), http.StatusBadRequest
+	if isoCode, ok := patchData["isocode"]; ok {
+		if isoCodeStr, isStr := isoCode.(string); isStr && isoCodeStr != "" && originalData["isocode"] != isoCode {
+			return nil, errors.New("modification of 'isocode' field is not allowed"), http.StatusBadRequest
 		}
 	}
 
@@ -256,7 +247,7 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " {
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}

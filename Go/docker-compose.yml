@@ -10,6 +10,7 @@ services:
     environment:
       PORT: ${PORT}
       FIREBASE_CREDENTIALS_FILE: /run/secrets/Firebase
+      FIRESTORE_PROJECT_ID: ${FIRESTORE_PROJECT_ID}
     volumes:
       - ./web:/root/web:ro
     secrets:
@@ -23,6 +24,7 @@ services:
     restart: no
     environment:
       FIREBASE_CREDENTIALS_FILE: /run/secrets/Firebase
+      FIRESTORE_PROJECT_ID: ${FIRESTORE_PROJECT_ID}
     volumes:
       - ./web:/root/web:ro
     secrets:

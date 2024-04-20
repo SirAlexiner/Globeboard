@@ -1,6 +1,7 @@
 package main
 
 import (
+	"globeboard/db"
 	"globeboard/internal/handlers"
 	"globeboard/internal/handlers/endpoint/dashboard"
 	"globeboard/internal/handlers/endpoint/util"
@@ -22,9 +23,15 @@ func fileExists(filename string) bool {
 }
 
 func main() {
+	// confirm that the Firebase Credentials file is accessible, if not panic.
 	if !fileExists(os.Getenv("FIREBASE_CREDENTIALS_FILE")) {
 		log.Panic("Firebase Credentials file is not mounted")
 	}
+	defer func() {
+		if err := db.Client.Close(); err != nil {
+			log.Printf("Error closing Firestore client: %v", err)
+		}
+	}()
 
 	// Get the port from the environment variable or set default to 8080
 	port := os.Getenv("PORT")

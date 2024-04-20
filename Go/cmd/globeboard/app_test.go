@@ -65,17 +65,15 @@ func init() {
 
 // TestRoot confirms that Root Endpoint returns 303 See Other for All Requests.
 func TestRoot(t *testing.T) {
-	// Create a request to your endpoint with the GET method
+	rr := httptest.NewRecorder()
+
 	req, err := http.NewRequest(http.MethodGet, Paths.Root, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusSeeOther {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusSeeOther)
@@ -86,10 +84,8 @@ func TestRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusSeeOther {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusSeeOther)
@@ -100,10 +96,8 @@ func TestRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusSeeOther {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusSeeOther)
@@ -114,10 +108,8 @@ func TestRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusSeeOther {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusSeeOther)
@@ -128,10 +120,8 @@ func TestRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusSeeOther {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusSeeOther)
@@ -155,12 +145,10 @@ func TestRegisterHandlerRegister(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
 	}
 
-	// Decode the JSON response
 	var response struct {
 		Token  string `json:"token"`
 		UserID string `json:"userid"`
@@ -204,7 +192,6 @@ func TestGetAPIKeyHandler(t *testing.T) {
 		t.Errorf("GET handler returned wrong status code: got %v want %v", status, http.StatusCreated)
 	}
 
-	// Optionally decode the response to check if the correct API key is retrieved
 	var response struct {
 		APIKey string `json:"token"`
 	}
@@ -216,17 +203,14 @@ func TestGetAPIKeyHandler(t *testing.T) {
 }
 
 func TestStatusGet(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Status+"?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
@@ -323,7 +307,7 @@ func TestNotificationsHandlerGet(t *testing.T) {
 
 func TestRegistrationsHandlerPost(t *testing.T) {
 	registrationData := []byte(`{
-		"country": "united states",
+		"isocode": "us",
 		"features": { 
 			"temperature": true,
 			"coordinates": true
@@ -357,7 +341,7 @@ func TestRegistrationsHandlerPost(t *testing.T) {
 
 func TestRegistrationsHandlerPostMinimal(t *testing.T) {
 	registrationData := []byte(`{
-		"isoCode": "no",
+		"country": "norway",
 		"features": { 
 			"temperature": true
 		}
@@ -509,17 +493,14 @@ func TestDeleteAPIKeyHandlerWrongToken(t *testing.T) {
 }
 
 func TestStatusGetWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Status+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -527,17 +508,14 @@ func TestStatusGetWrongToken(t *testing.T) {
 }
 
 func TestRegistrationsPostWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -545,17 +523,14 @@ func TestRegistrationsPostWrongToken(t *testing.T) {
 }
 
 func TestRegistrationsGetWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -563,17 +538,14 @@ func TestRegistrationsGetWrongToken(t *testing.T) {
 }
 
 func TestRegistrationsGetIdWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations+"/"+docId1+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -581,17 +553,14 @@ func TestRegistrationsGetIdWrongToken(t *testing.T) {
 }
 
 func TestRegistrationsPatchIdWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -599,17 +568,14 @@ func TestRegistrationsPatchIdWrongToken(t *testing.T) {
 }
 
 func TestRegistrationsDeleteIdWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Registrations+"/"+docId1+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -617,17 +583,14 @@ func TestRegistrationsDeleteIdWrongToken(t *testing.T) {
 }
 
 func TestDashboardGetIdWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Dashboards+"/"+docId1+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -635,17 +598,14 @@ func TestDashboardGetIdWrongToken(t *testing.T) {
 }
 
 func TestNotificationsPostWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPost, Endpoints.Notifications+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -653,17 +613,14 @@ func TestNotificationsPostWrongToken(t *testing.T) {
 }
 
 func TestNotificationsGetWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -671,17 +628,14 @@ func TestNotificationsGetWrongToken(t *testing.T) {
 }
 
 func TestNotificationsGetIdWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications+"/"+webhookId1+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -689,17 +643,14 @@ func TestNotificationsGetIdWrongToken(t *testing.T) {
 }
 
 func TestNotificationsDeleteIdWrongToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Notifications+"/"+webhookId1+"?token="+wrongToken, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotAcceptable {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotAcceptable)
@@ -725,17 +676,14 @@ func TestDeleteAPIKeyHandlerNoToken(t *testing.T) {
 }
 
 func TestStatusGetNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Status, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -743,17 +691,14 @@ func TestStatusGetNoToken(t *testing.T) {
 }
 
 func TestRegistrationsPostNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -761,17 +706,14 @@ func TestRegistrationsPostNoToken(t *testing.T) {
 }
 
 func TestRegistrationsGetNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -779,17 +721,14 @@ func TestRegistrationsGetNoToken(t *testing.T) {
 }
 
 func TestRegistrationsGetIdNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations+"/"+docId1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -797,17 +736,14 @@ func TestRegistrationsGetIdNoToken(t *testing.T) {
 }
 
 func TestRegistrationsPatchIdNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -815,17 +751,14 @@ func TestRegistrationsPatchIdNoToken(t *testing.T) {
 }
 
 func TestRegistrationsDeleteIdNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Registrations+"/"+docId1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -833,17 +766,14 @@ func TestRegistrationsDeleteIdNoToken(t *testing.T) {
 }
 
 func TestDashboardGetIdNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Dashboards+"/"+docId1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -851,17 +781,14 @@ func TestDashboardGetIdNoToken(t *testing.T) {
 }
 
 func TestNotificationsPostNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPost, Endpoints.Notifications, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -869,17 +796,14 @@ func TestNotificationsPostNoToken(t *testing.T) {
 }
 
 func TestNotificationsGetNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -887,17 +811,14 @@ func TestNotificationsGetNoToken(t *testing.T) {
 }
 
 func TestNotificationsGetIdNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications+"/"+webhookId1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -905,17 +826,14 @@ func TestNotificationsGetIdNoToken(t *testing.T) {
 }
 
 func TestNotificationsDeleteIdNoToken(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Notifications+"/"+webhookId1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusUnauthorized {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusUnauthorized)
@@ -925,17 +843,14 @@ func TestNotificationsDeleteIdNoToken(t *testing.T) {
 /* Empty ID */
 
 func TestRegistrationsGetEmptyId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations+"/?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -943,17 +858,14 @@ func TestRegistrationsGetEmptyId(t *testing.T) {
 }
 
 func TestRegistrationsPatchEmptyId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -961,17 +873,14 @@ func TestRegistrationsPatchEmptyId(t *testing.T) {
 }
 
 func TestRegistrationsDeleteEmptyId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Registrations+"/?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -979,17 +888,14 @@ func TestRegistrationsDeleteEmptyId(t *testing.T) {
 }
 
 func TestDashboardGetEmptyId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Dashboards+"/?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -997,17 +903,14 @@ func TestDashboardGetEmptyId(t *testing.T) {
 }
 
 func TestNotificationsGetEmptyId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications+"/?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -1015,37 +918,123 @@ func TestNotificationsGetEmptyId(t *testing.T) {
 }
 
 func TestNotificationsDeleteEmptyId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Notifications+"/?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
 	}
 }
 
+/* Whitespace ID */
+
+func TestRegistrationsGetWhitespaceId(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations+"/%20?token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsPatchWhitespaceId(t *testing.T) {
+	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/%20?token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsDeleteWhitespaceId(t *testing.T) {
+	req, err := http.NewRequest(http.MethodDelete, Endpoints.Registrations+"/%20?token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
+func TestDashboardGetWhitespaceId(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, Endpoints.Dashboards+"/%20?token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
+func TestNotificationsGetWhitespaceId(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications+"/%20?token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
+func TestNotificationsDeleteWhitespaceId(t *testing.T) {
+	req, err := http.NewRequest(http.MethodDelete, Endpoints.Notifications+"/%20?token="+token, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+}
+
 /* Wrong ID */
 
 func TestRegistrationsGetWrongId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Registrations+"/aaaaaaaaaaaaaaaaa?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -1063,11 +1052,9 @@ func TestRegistrationsPatchWrongId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -1075,17 +1062,14 @@ func TestRegistrationsPatchWrongId(t *testing.T) {
 }
 
 func TestRegistrationsDeleteWrongId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Registrations+"/aaaaaaaaaaaaaaaaa?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -1093,17 +1077,14 @@ func TestRegistrationsDeleteWrongId(t *testing.T) {
 }
 
 func TestDashboardGetWrongId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Dashboards+"/aaaaaaaaaaaaaaaaa?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -1111,17 +1092,14 @@ func TestDashboardGetWrongId(t *testing.T) {
 }
 
 func TestNotificationsGetWrongId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodGet, Endpoints.Notifications+"/aaaaaaaaaaaaaaaaa?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotFound)
@@ -1129,17 +1107,14 @@ func TestNotificationsGetWrongId(t *testing.T) {
 }
 
 func TestNotificationsDeleteWrongId(t *testing.T) {
-	// Create a request to your endpoint with the GET method
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.Notifications+"/aaaaaaaaaaaaaaaaa?token="+token, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusInternalServerError {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusInternalServerError)
@@ -1163,7 +1138,6 @@ func TestRegisterHandlerRegisterBadEmail(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}
@@ -1184,7 +1158,65 @@ func TestRegisterHandlerRegisterBadPassword(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegisterHandlerRegisterBadLongPassword(t *testing.T) {
+	form := url.Values{}
+	form.Add("username", DisplayName)
+	form.Add("email", Email)
+	form.Add("password", "passwordpassword")
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.UserRegistration, strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+func TestRegisterHandlerRegisterBadLongPasswordUppercase(t *testing.T) {
+	form := url.Values{}
+	form.Add("username", DisplayName)
+	form.Add("email", Email)
+	form.Add("password", "PasswordPassword")
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.UserRegistration, strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegisterHandlerRegisterBadLongPasswordUppercaseNumber(t *testing.T) {
+	form := url.Values{}
+	form.Add("username", DisplayName)
+	form.Add("email", Email)
+	form.Add("password", "Passwordp455w0rd")
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.UserRegistration, strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}
@@ -1233,7 +1265,6 @@ func TestRegisterHandlerEmptyRegister(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}
@@ -1284,7 +1315,159 @@ func TestRegistrationsIdHandlerEmptyPatch(t *testing.T) {
 	}
 }
 
-/* Delete User No UUID & Wrong UUID */
+/* Wrong POST/PATCH BODY */
+
+func TestRegistrationsIdHandlerPostNoFeatures(t *testing.T) {
+	patchData := []byte(`{
+		"country": "Sweden",
+		"features": { 
+			"temperature": false,
+			"precipitation": false,
+			"capital": false,
+			"coordinates": false,
+			"population": false,
+			"area": false,
+			"targetCurrencies": []
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+		t.Log(rr.Body.String())
+	}
+}
+
+func TestRegistrationsIdHandlerPatchCountry(t *testing.T) {
+	patchData := []byte(`{
+		"country": "Sweden",
+		"features": { 
+			"temperature": true,
+			"precipitation": true,
+			"capital": true,
+			"coordinates": true,
+			"population": true,
+			"area": true,
+			"targetCurrencies": ["jpy", "nok", "eur","gbp"]
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+		t.Log(rr.Body.String())
+	}
+}
+
+func TestRegistrationsIdHandlerPatchIsocode(t *testing.T) {
+	patchData := []byte(`{
+		"isocode": "gb",
+		"features": { 
+			"temperature": true,
+			"precipitation": true,
+			"capital": true,
+			"coordinates": true,
+			"population": true,
+			"area": true,
+			"targetCurrencies": ["jpy", "nok", "eur","gbp"]
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsIdHandlerPatchNoFeatures(t *testing.T) {
+	patchData := []byte(`{
+    }`)
+
+	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsIdHandlerPatchEmptyFeatures(t *testing.T) {
+	patchData := []byte(`{
+		"features": {}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsIdHandlerAllFalse(t *testing.T) {
+	patchData := []byte(`{
+		"features": { 
+			"temperature": false,
+			"precipitation": false,
+			"capital": false,
+			"coordinates": false,
+			"population": false,
+			"area": false,
+			"targetCurrencies": []
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPatch, Endpoints.Registrations+"/"+docId1+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+/* Delete User No UUID, Whitespace UUID & Wrong UUID */
 
 func TestRegisterHandlerDeleteNoUUID(t *testing.T) {
 	req, err := http.NewRequest(http.MethodDelete, Endpoints.UserDeletion+"/", nil)
@@ -1295,9 +1478,22 @@ func TestRegisterHandlerDeleteNoUUID(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusNotFound {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
+	}
+}
+
+func TestRegisterHandlerDeleteWhitespaceUUID(t *testing.T) {
+	req, err := http.NewRequest(http.MethodDelete, Endpoints.UserDeletion+"/%20", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}
 }
 
@@ -1310,7 +1506,6 @@ func TestRegisterHandlerDeleteWrongUUID(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusInternalServerError {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusInternalServerError)
 	}
@@ -1319,17 +1514,15 @@ func TestRegisterHandlerDeleteWrongUUID(t *testing.T) {
 /* Endpoint "Not Implemented" Methods Check */
 
 func TestUserRegister(t *testing.T) {
-	// Create a request to your endpoint with the GET method
+	rr := httptest.NewRecorder()
+
 	req, err := http.NewRequest(http.MethodGet, Endpoints.UserRegistration, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1340,10 +1533,8 @@ func TestUserRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1354,10 +1545,8 @@ func TestUserRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1368,10 +1557,8 @@ func TestUserRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1379,17 +1566,15 @@ func TestUserRegister(t *testing.T) {
 }
 
 func TestUserDeletion(t *testing.T) {
-	// Create a request to your endpoint with the GET method
+	rr := httptest.NewRecorder()
+
 	req, err := http.NewRequest(http.MethodGet, Endpoints.UserDeletion+"/"+UUID, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Create a ResponseRecorder to record the response
-	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1400,10 +1585,8 @@ func TestUserDeletion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1414,10 +1597,8 @@ func TestUserDeletion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1428,10 +1609,8 @@ func TestUserDeletion(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1439,7 +1618,6 @@ func TestUserDeletion(t *testing.T) {
 }
 
 func TestAPIKeyHandler(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.ApiKey, nil)
@@ -1447,10 +1625,8 @@ func TestAPIKeyHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1461,10 +1637,8 @@ func TestAPIKeyHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1475,10 +1649,8 @@ func TestAPIKeyHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1486,7 +1658,6 @@ func TestAPIKeyHandler(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.Status, nil)
@@ -1494,10 +1665,8 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1508,10 +1677,8 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1522,10 +1689,8 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1536,10 +1701,8 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1547,7 +1710,6 @@ func TestStatus(t *testing.T) {
 }
 
 func TestRegistrations(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.Registrations, nil)
@@ -1555,10 +1717,8 @@ func TestRegistrations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1569,10 +1729,8 @@ func TestRegistrations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1583,10 +1741,8 @@ func TestRegistrations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1594,7 +1750,6 @@ func TestRegistrations(t *testing.T) {
 }
 
 func TestRegistrationsId(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.Registrations+"/"+docId1, nil)
@@ -1602,10 +1757,8 @@ func TestRegistrationsId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1616,10 +1769,8 @@ func TestRegistrationsId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1627,7 +1778,6 @@ func TestRegistrationsId(t *testing.T) {
 }
 
 func TestDashboardId(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.Dashboards+"/"+docId1, nil)
@@ -1635,10 +1785,8 @@ func TestDashboardId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1649,10 +1797,8 @@ func TestDashboardId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1663,10 +1809,8 @@ func TestDashboardId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1677,10 +1821,8 @@ func TestDashboardId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1688,7 +1830,6 @@ func TestDashboardId(t *testing.T) {
 }
 
 func TestNotifications(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.Notifications, nil)
@@ -1696,10 +1837,8 @@ func TestNotifications(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1710,10 +1849,8 @@ func TestNotifications(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1724,10 +1861,8 @@ func TestNotifications(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1735,7 +1870,6 @@ func TestNotifications(t *testing.T) {
 }
 
 func TestNotificationsId(t *testing.T) {
-	// Create a ResponseRecorder to record the response
 	rr := httptest.NewRecorder()
 
 	req, err := http.NewRequest(http.MethodPut, Endpoints.Notifications+"/"+docId1, nil)
@@ -1743,10 +1877,8 @@ func TestNotificationsId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1757,10 +1889,8 @@ func TestNotificationsId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1771,10 +1901,8 @@ func TestNotificationsId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Serve the request to the handler
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code
 	if status := rr.Code; status != http.StatusNotImplemented {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNotImplemented)
@@ -1850,7 +1978,6 @@ func TestRegisterHandlerDelete(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 
-	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusNoContent {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusNoContent)
 	}

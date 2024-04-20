@@ -22,7 +22,6 @@ const (
 	ApplicationJSON = "application/json"
 )
 
-// RegistrationsHandler handles HTTP GET requests to retrieve supported languages.
 func RegistrationsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -49,7 +48,6 @@ func DecodeCountryInfo(data io.ReadCloser) (*structs.CountryInfoInternal, error)
 	return ci, nil
 }
 
-// handleRegPostRequest handles POST requests to register a country.
 func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	token := query.Get("token")
@@ -70,7 +68,6 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decode the body into a CountryInfoPost struct
 	ci, err := DecodeCountryInfo(r.Body)
 	if err != nil {
 		err := fmt.Sprintf("Error decoding request body: %v", err)
@@ -103,16 +100,12 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		"lastChange": reg.Lastchange,
 	}
 
-	// Set Content-Type header
 	w.Header().Set(ContentType, ApplicationJSON)
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusCreated)
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -126,7 +119,6 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.Registrations, Webhooks.EventRegister)
 }
 
-// handleRegGetAllRequest handles GET requests to retrieve a registered country.
 func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	token := query.Get("token")
@@ -147,13 +139,10 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set Content-Type header
 	w.Header().Set(ContentType, ApplicationJSON)
 
-	// Write the status code to the response
 	w.WriteHeader(http.StatusOK)
 
-	// Parse Data for External Users
 	var cies []*structs.CountryInfoExternal
 	for _, reg := range regs {
 		cie := new(structs.CountryInfoExternal)
@@ -165,10 +154,8 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 		cies = append(cies, cie)
 	}
 
-	// Serialize the struct to JSON and write it to the response
 	err = json.NewEncoder(w).Encode(cies)
 	if err != nil {
-		// Handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

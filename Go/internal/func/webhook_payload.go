@@ -25,16 +25,10 @@ var (
 )
 
 func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoExternal, endpoint, eventAction string) {
-	client, err := authenticate.GetFireBaseAuthClient()
-	if err != nil {
-		log.Printf("Error initializing Firebase Auth: %v", err)
-		return
-	}
-
 	ctx := context.Background()
 
 	// Ignoring error as we've already confirmed the caller at the endpoint.
-	user, _ := client.GetUser(ctx, caller)
+	user, _ := authenticate.Client.GetUser(ctx, caller)
 
 	email := user.DisplayName + " (" + strings.ToLower(user.Email) + ")"
 
@@ -90,16 +84,10 @@ func LoopSendWebhooksRegistrations(caller string, ci *structs.CountryInfoExterna
 }
 
 func LoopSendWebhooksDashboard(caller string, dr *structs.DashboardResponse) {
-	client, err := authenticate.GetFireBaseAuthClient()
-	if err != nil {
-		log.Printf("Error initializing Firebase Auth: %v", err)
-		return
-	}
-
 	ctx := context.Background()
 
 	// Ignoring error as we've already confirmed the caller at the endpoint.
-	user, _ := client.GetUser(ctx, caller)
+	user, _ := authenticate.Client.GetUser(ctx, caller)
 
 	email := user.DisplayName + " (" + strings.ToLower(user.Email) + ")"
 	title = Webhooks.GETTitle
@@ -179,12 +167,12 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 		log.Println("Error marshaling request body:", err)
 		return
 	}
+
 	// Remove the UUID field from the payload.
 	requestBodyString := string(requestBodyJSON)
 	requestBodyString = strings.Replace(requestBodyString, "  \"uuid\": \"\",\n", "", -1)
 	requestBodyString = fmt.Sprintf("```json\n%s\n```", requestBodyString)
 
-	// Define default and dynamic fields
 	fields := []structs.Field{
 		{
 			Name:   "Event",
@@ -228,24 +216,20 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 		},
 	}
 
-	// Convert the payload into a JSON string
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Println("Error marshaling payload:", err)
 		return
 	}
 
-	// Create a new request using http
 	req, err := http.NewRequest("POST", payloadUrl, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		log.Println("Error creating request:", err)
 		return
 	}
 
-	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// Execute the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -253,16 +237,11 @@ func sendDiscordWebhookPayload(email, title string, color int, event, endpoint s
 		return
 	}
 
-	// Read the response body
-	body, err := io.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading response body:", err)
 		return
 	}
-
-	// You can now log the response status and body
-	log.Println("Response Status:", resp.Status)
-	log.Println("Response Body:", string(body))
 }
 
 func sendWebhookPayload(email, title string, event, endpoint, country string, payloadUrl string) {
@@ -276,24 +255,20 @@ func sendWebhookPayload(email, title string, event, endpoint, country string, pa
 		"timestamp": time.Now().UTC().Format("2006-01-02T15:04:05.999Z"), // Formatting the current time to ISO8601
 	}
 
-	// Convert the payload into a JSON string
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		log.Println("Error marshaling payload:", err)
 		return
 	}
 
-	// Create a new request using http
 	req, err := http.NewRequest(http.MethodPost, payloadUrl, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		log.Println("Error creating request:", err)
 		return
 	}
 
-	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// Execute the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -301,13 +276,9 @@ func sendWebhookPayload(email, title string, event, endpoint, country string, pa
 		return
 	}
 
-	// Read the response body
-	body, err := io.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading response body:", err)
 		return
 	}
-
-	// You can now log the response status and body
-	log.Println("Response Status:" + resp.Status + "Response Body:" + string(body))
 }

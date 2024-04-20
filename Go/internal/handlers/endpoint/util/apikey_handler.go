@@ -32,15 +32,7 @@ func handleApiKeyDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
 
-	client, err := authenticate.GetFireBaseAuthClient()
-	if err != nil {
-		log.Printf("error getting Auth client: %v\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	// Verify the ID token
-	_, err = client.GetUser(ctx, UUID)
+	_, err := authenticate.Client.GetUser(ctx, UUID)
 	if err != nil {
 		log.Printf("error verifying UUID: %v\n", err)
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
@@ -71,15 +63,7 @@ func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
 
-	client, err := authenticate.GetFireBaseAuthClient()
-	if err != nil {
-		log.Printf("error getting Auth client: %v\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	// Verify the ID token
-	_, err = client.GetUser(ctx, UUID)
+	_, err := authenticate.Client.GetUser(ctx, UUID)
 	if err != nil {
 		log.Printf("error verifying UUID: %v\n", err)
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
@@ -99,7 +83,6 @@ func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
 		"token": key,
 	}
 
-	// Encode books as JSON and send the response.
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Error encoding JSON response: "+err.Error(), http.StatusInternalServerError)
 		return
