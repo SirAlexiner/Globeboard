@@ -39,7 +39,7 @@ In collaboration with:
 ## API Reference / Documentation
 
 <details>
-<summary><h3>Register as a user to receive an API key:</h3></summary>
+<summary><h4>Register as a user to receive an API key:</h4></summary>
 
 ```http
   POST /util/v1/user/register
@@ -70,7 +70,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Delete your user profile:</h3></summary>
+<summary><h4>Delete your user profile:</h4></summary>
 
 ```http
   DELETE /util/v1/user/delete/{ID}
@@ -88,7 +88,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Get a New API key: (Old must be deleted first, only allowed one)</h3></summary>
+<summary><h4>Get a New API key: (Old must be deleted first, only allowed one)</h4></summary>
 
 ```http
   GET /util/v1/key/
@@ -112,7 +112,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Delete your API key:</h3></summary>
+<summary><h4>Delete your API key:</h4></summary>
 
 ```http
   DELETE /util/v1/key/?token={token}
@@ -132,7 +132,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Check API Statuses: (Firestore, independent third party API, Version, Uptime)</h3></summary>
+<summary><h4>Check API Statuses: (Firestore, independent third party API, Version, Uptime)</h4></summary>
 
 ```http
   GET /dashboards/v1/status?token={token}
@@ -163,7 +163,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Register a Country to get information for:</h3></summary>
+<summary><h4>Register a Country to get information for:</h4></summary>
 
 ```http
   POST /dashboards/v1/registrations?token={token}
@@ -221,7 +221,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Retrieve all registered countries:</h3></summary>
+<summary><h4>Retrieve all registered countries:</h4></summary>
 
 ```http
   GET /dashboards/v1/registrations?token={token}
@@ -284,7 +284,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Retrieve a specific registration:</h3></summary>
+<summary><h4>Retrieve a specific registration:</h4></summary>
 
 ```http
   GET /dashboards/v1/registrations/{ID}?token={token}
@@ -326,7 +326,7 @@ In collaboration with:
 </details>
 
 <details>
-<summary><h3>Update a specific registration:</h3></summary>
+<summary><h4>Update a specific registration:</h4></summary>
 
 ```http
   PATCH /dashboards/v1/registrations/{ID}?token={token}
@@ -367,7 +367,7 @@ every feature is not allowed to be false, at least one feature must be true.
 </details>
 
 <details>
-<summary><h3>Delete a specific registration:</h3></summary>
+<summary><h4>Delete a specific registration:</h4></summary>
 
 ```http
   DELETE /dashboards/v1/registrations/{ID}?token={token}
@@ -386,7 +386,7 @@ every feature is not allowed to be false, at least one feature must be true.
 </details>
 
 <details>
-<summary><h3>Retrieve a populated specific registration:</h3></summary>
+<summary><h4>Retrieve a populated specific registration:</h4></summary>
 
 ```http
   GET /dashboards/v1/dashboard/{ID}?token={token}
@@ -444,7 +444,7 @@ every feature is not allowed to be false, at least one feature must be true.
 </details>
 
 <details>
-<summary><h3>Register a Webhook:</h3></summary>
+<summary><h4>Register a Webhook:</h4></summary>
 
 ```http
   POST /dashboards/v1/notifications?token={token}
@@ -486,7 +486,7 @@ every feature is not allowed to be false, at least one feature must be true.
 </details>
 
 <details>
-<summary><h3>Retrieve all Webhooks:</h3></summary>
+<summary><h4>Retrieve all Webhooks:</h4></summary>
 
 ```http
   GET /dashboards/v1/notifications?token={token}
@@ -529,7 +529,7 @@ every feature is not allowed to be false, at least one feature must be true.
 </details>
 
 <details>
-<summary><h3>Retrieve specific Webhook:</h3></summary>
+<summary><h4>Retrieve specific Webhook:</h4></summary>
 
 ```http
   GET /dashboards/v1/notifications/{ID}?token={token}
@@ -561,7 +561,7 @@ every feature is not allowed to be false, at least one feature must be true.
 </details>
 
 <details>
-<summary><h3>Delete a Webhook:</h3></summary>
+<summary><h4>Delete a Webhook:</h4></summary>
 
 ```http
   DELETE /dashboards/v1/notifications/{ID}?token={token}
