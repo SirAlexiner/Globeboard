@@ -198,8 +198,7 @@ In collaboration with:
 ```json
 {
    "isocode": "us",
-   "features": { 
-                  "temperature": true,
+   "features": {
                   "targetCurrencies": ["NOK"]
                }
 }
