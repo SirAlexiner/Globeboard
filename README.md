@@ -8,6 +8,7 @@
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC_BY--NC--ND_4.0-green.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
 GlobeBoard Go REST API is a webapplication REST API service designed to provide GeoLocational Information.
+
 ## Authors
 This code was developed by:
 - Torgrim Thorsen [@Nintendo_Alex](https://git.gvk.idi.ntnu.no/Nintendo_Alex)
@@ -16,6 +17,7 @@ In collaboration with:
 
 - Robin Jahre [@robinja](https://git.gvk.idi.ntnu.no/Nrobinja)
 - Phrot Vedal [@BossTheModern](https://git.gvk.idi.ntnu.no/BossTheModern)
+
 ## Features
 
 - User Registration through Firestore Auth
@@ -36,7 +38,8 @@ In collaboration with:
 
 ## API Reference / Documentation
 
-### Register as a user to retrieve an API key:
+<details>
+<summary><h3>Register as a user to receive an API key:</h3></summary>
 
 ```http
   POST /util/v1/user/register
@@ -64,8 +67,10 @@ In collaboration with:
 }
 ```
 
+</details>
 
-### Delete your user profile:
+<details>
+<summary><h3>Delete your user profile:</h3></summary>
 
 ```http
   DELETE /util/v1/user/delete/{ID}
@@ -80,7 +85,10 @@ In collaboration with:
 | Status Code | `204 No Content` |
 |:------------|:-----------------|
 
-### Get a New API key: (Old must be deleted first, only allowed one)
+</details>
+
+<details>
+<summary><h3>Get a New API key: (Old must be deleted first, only allowed one)</h3></summary>
 
 ```http
   GET /util/v1/key/
@@ -101,7 +109,10 @@ In collaboration with:
 }
 ```
 
-### Delete your API key:
+</details>
+
+<details>
+<summary><h3>Delete your API key:</h3></summary>
 
 ```http
   DELETE /util/v1/key/?token={token}
@@ -118,7 +129,10 @@ In collaboration with:
 | Status Code | `204 No Content` |
 |:------------|:-----------------|
 
-### Check API Statuses: (Firestore, independent third party API, Version, Uptime)
+</details>
+
+<details>
+<summary><h3>Check API Statuses: (Firestore, independent third party API, Version, Uptime)</h3></summary>
 
 ```http
   GET /dashboards/v1/status?token={token}
@@ -146,7 +160,10 @@ In collaboration with:
 }
 ```
 
-### Register a Country to get information for:
+</details>
+
+<details>
+<summary><h3>Register a Country to get information for:</h3></summary>
 
 ```http
   POST /dashboards/v1/registrations?token={token}
@@ -202,7 +219,10 @@ In collaboration with:
 
 ```
 
-### Retrieve all registered countries:
+</details>
+
+<details>
+<summary><h3>Retrieve all registered countries:</h3></summary>
 
 ```http
   GET /dashboards/v1/registrations?token={token}
@@ -262,7 +282,10 @@ In collaboration with:
 ]
 ```
 
-### Retrieve a specific registration:
+</details>
+
+<details>
+<summary><h3>Retrieve a specific registration:</h3></summary>
 
 ```http
   GET /dashboards/v1/registrations/{ID}?token={token}
@@ -301,7 +324,10 @@ In collaboration with:
 }
 ```
 
-### Update a specific registration:
+</details>
+
+<details>
+<summary><h3>Update a specific registration:</h3></summary>
 
 ```http
   PATCH /dashboards/v1/registrations/{ID}?token={token}
@@ -339,7 +365,10 @@ every feature is not allowed to be false, at least one feature must be true.
 }
 ```
 
-### Delete a specific registration:
+</details>
+
+<details>
+<summary><h3>Delete a specific registration:</h3></summary>
 
 ```http
   DELETE /dashboards/v1/registrations/{ID}?token={token}
@@ -355,7 +384,10 @@ every feature is not allowed to be false, at least one feature must be true.
 | Status Code   | `204 No Content`   |
 |:--------------|:-------------------|
 
-### Retrieve a populated specific registration:
+</details>
+
+<details>
+<summary><h3>Retrieve a populated specific registration:</h3></summary>
 
 ```http
   GET /dashboards/v1/dashboard/{ID}?token={token}
@@ -410,7 +442,10 @@ every feature is not allowed to be false, at least one feature must be true.
 }
 ```
 
-### Register a Webhook:
+</details>
+
+<details>
+<summary><h3>Register a Webhook:</h3></summary>
 
 ```http
   POST /dashboards/v1/notifications?token={token}
@@ -449,7 +484,10 @@ every feature is not allowed to be false, at least one feature must be true.
 }
 ```
 
-### Retrieve all Webhooks:
+</details>
+
+<details>
+<summary><h3>Retrieve all Webhooks:</h3></summary>
 
 ```http
   GET /dashboards/v1/notifications?token={token}
@@ -489,7 +527,10 @@ every feature is not allowed to be false, at least one feature must be true.
 ]
 ```
 
-### Retrieve specific Webhook:
+</details>
+
+<details>
+<summary><h3>Retrieve specific Webhook:</h3></summary>
 
 ```http
   GET /dashboards/v1/notifications/{ID}?token={token}
@@ -518,7 +559,10 @@ every feature is not allowed to be false, at least one feature must be true.
 }
 ```
 
-### Delete a Webhook:
+</details>
+
+<details>
+<summary><h3>Delete a Webhook:</h3></summary>
 
 ```http
   DELETE /dashboards/v1/notifications/{ID}?token={token}
@@ -533,6 +577,8 @@ every feature is not allowed to be false, at least one feature must be true.
 
 | Status Code   | `204 No Content`   |
 |:--------------|:-------------------|
+
+</details>
 
 ## Environment Variables
 
@@ -597,7 +643,7 @@ cd globeboard/Go/
       ```bash
       docker compose down globeboard
       ```
-
+      
 ## Running Tests
 
 To run tests, navigate to the project directory:
@@ -646,7 +692,7 @@ cd globeboard/Go/
       ```bash
       docker compose logs globeboard-test
       ```
-
+      
     - #### Follow Logs:
       ```bash
       docker compose logs globeboard-test -f
@@ -656,9 +702,7 @@ cd globeboard/Go/
       ```bash
       docker compose down globeboard-test
       ```
-
-
-
+      
 ## Contributing
 
 Contributions to the GlobeBoard REST API are welcome! To contribute, follow these steps:
@@ -671,9 +715,6 @@ Contributions to the GlobeBoard REST API are welcome! To contribute, follow thes
 - Submit a pull request to the original repository, explaining your changes and their significance.
 
 Please adhere to the project's code of conduct and contribution guidelines provided in the [`./CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) and [`./CONTRIBUTING.md`](CONTRIBUTING.md) files, respectively.
-
-
-
 
 ## Support
 
