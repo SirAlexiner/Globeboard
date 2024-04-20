@@ -1,4 +1,4 @@
-![Text: GlobeBoard Go Rest API](./readme/go.jpg)
+![Text: GlobeBoard Go Rest API](go.jpg)
 # GlobeBoard Go REST API
 
 ## Introduction
