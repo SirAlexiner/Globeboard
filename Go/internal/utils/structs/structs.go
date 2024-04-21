@@ -57,6 +57,8 @@ type FeaturesDashboard struct {
 	TargetCurrencies map[string]float64    `json:"targetCurrencies,omitempty"`
 }
 
+// CoordinatesDashboard
+// @Description:
 type CoordinatesDashboard struct {
 	Latitude  string `json:"latitude,omitempty"`
 	Longitude string `json:"longitude,omitempty"`
@@ -64,6 +66,8 @@ type CoordinatesDashboard struct {
 
 // Status structs
 
+// StatusResponse
+// @Description:
 type StatusResponse struct {
 	CountriesApi    string `json:"countries_api"`
 	MeteoApi        string `json:"meteo_api"`
@@ -105,6 +109,8 @@ type Footer struct {
 	Text string `json:"text"`
 }
 
+// Embed
+// @Description:
 type Embed struct {
 	Title       string  `json:"title"`
 	Author      Author  `json:"author"`
@@ -115,6 +121,8 @@ type Embed struct {
 	Footer      Footer  `json:"footer"`
 }
 
+// WebhookPayload
+// @Description:
 type WebhookPayload struct {
 	Username  string  `json:"username"`
 	AvatarURL string  `json:"avatar_url"`

@@ -51,6 +51,6 @@ Deploy:
   script:
     - docker compose up globeboard -d
   after_script:
-    - docker compose ps
+    - docker ps
   only:
     - main

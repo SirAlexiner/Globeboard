@@ -34,4 +34,5 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	log.Print("Successfully Deleted User: ", ID)
 }

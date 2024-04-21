@@ -12,7 +12,11 @@ const (
 	ISE = "Internal Server Error"
 )
 
-// EmptyHandler handles every request to the root path by redirecting to the endpoints.
+// EmptyHandler
+//
+//	@Description:
+//	@param w
+//	@param r
 func EmptyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
