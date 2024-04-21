@@ -50,7 +50,7 @@ func init() {
 
 	mux.HandleFunc(Paths.Root, handlers.EmptyHandler)
 	mux.HandleFunc(Endpoints.UserRegistration, util.UserRegistrationHandler)
-	mux.HandleFunc(Endpoints.UserDeletionId, util.UserDeletionHandler)
+	mux.HandleFunc(Endpoints.UserDeletionID, util.UserDeletionHandler)
 	mux.HandleFunc(Endpoints.ApiKey, util.APIKeyHandler)
 	mux.HandleFunc(Endpoints.RegistrationsID, dashboard.RegistrationsIdHandler)
 	mux.HandleFunc(Endpoints.Registrations, dashboard.RegistrationsHandler)
@@ -219,7 +219,7 @@ func TestStatusGet(t *testing.T) {
 
 func TestNotificationsHandlerPostDiscord(t *testing.T) {
 	notificationData := []byte(`{
-		"url": "https://localhost/discord",
+		"url": "https://discord.com",
 		"country": "",
 		"event": ["INVOKE","REGISTER","CHANGE","DELETE"]
 	}`)
@@ -249,7 +249,7 @@ func TestNotificationsHandlerPostDiscord(t *testing.T) {
 
 func TestNotificationsHandlerPost(t *testing.T) {
 	notificationData := []byte(`{
-		"url": "https://localhost/",
+		"url": "https://google.com/",
 		"country": "",
 		"event": ["INVOKE","DELETE"]
 	}`)
@@ -441,7 +441,6 @@ func TestDashboardIdHandlerGet(t *testing.T) {
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
-	t.Log(rr.Body.String())
 }
 
 func TestDashboardIdHandlerGetMinimal(t *testing.T) {
@@ -457,7 +456,6 @@ func TestDashboardIdHandlerGetMinimal(t *testing.T) {
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
-	t.Log(rr.Body.String())
 }
 
 func TestRegistrationsIdHandlerDeleteMinimal(t *testing.T) {
@@ -1342,7 +1340,111 @@ func TestRegistrationsIdHandlerPostNoFeatures(t *testing.T) {
 
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
-		t.Log(rr.Body.String())
+	}
+}
+
+func TestRegistrationsIdHandlerPostEmptyFeatures(t *testing.T) {
+	patchData := []byte(`{
+		"country": "Sweden",
+		"features": {}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsIdHandlerPostWrongIso(t *testing.T) {
+	patchData := []byte(`{
+		"isocode": "sweden",
+		"features": { 
+			"temperature": true,
+			"precipitation": true,
+			"capital": true,
+			"coordinates": true,
+			"population": true,
+			"area": true,
+			"targetCurrencies": ["jpy", "nok", "eur","gbp"]
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsIdHandlerPostWrongCountry(t *testing.T) {
+	patchData := []byte(`{
+		"country": "no",
+		"features": { 
+			"temperature": true,
+			"precipitation": true,
+			"capital": true,
+			"coordinates": true,
+			"population": true,
+			"area": true,
+			"targetCurrencies": ["jpy", "nok", "eur","gbp"]
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
+	}
+}
+
+func TestRegistrationsIdHandlerPostCountryIsoMismatch(t *testing.T) {
+	patchData := []byte(`{
+		"country": "sweden",
+		"isocode": "gb",
+		"features": { 
+			"temperature": true,
+			"precipitation": true,
+			"capital": true,
+			"coordinates": true,
+			"population": true,
+			"area": true,
+			"targetCurrencies": ["jpy", "nok", "eur","gbp"]
+		}
+    }`)
+
+	req, err := http.NewRequest(http.MethodPost, Endpoints.Registrations+"?token="+token, bytes.NewBuffer(patchData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	mux.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
 	}
 }
 
@@ -1371,7 +1473,6 @@ func TestRegistrationsIdHandlerPatchCountry(t *testing.T) {
 
 	if status := rr.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
-		t.Log(rr.Body.String())
 	}
 }
 

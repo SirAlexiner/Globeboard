@@ -1,4 +1,4 @@
-// Package handlers provide HTTP request handlers for routing and handling requests within the Gutendex API.
+// Package handlers provide HTTP request handlers for routing and handling requests within the application.
 package handlers
 
 import (
@@ -9,48 +9,42 @@ import (
 )
 
 const (
-	ISE = "Internal Server Error"
+	ISE = "Internal Server Error" // ISE defines the error message returned when an internal server error occurs.
 )
 
-// EmptyHandler
-//
-//	@Description:
-//	@param w
-//	@param r
+// EmptyHandler serves the "root.html" file at the root URL ("/") and returns a 404 Not Found error for other paths.
 func EmptyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		http.NotFound(w, r) // Return a 404 Not Found error if the path is not the root.
 		return
 	}
 
-	filePath := "./web/root.html"
+	filePath := "./web/root.html" // Path to the "root.html" file.
 
-	// Set the "Content-Type" header.
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8") // Set the "Content-Type" header.
+	w.WriteHeader(http.StatusSeeOther)                         // Set the status code to 303 See Other,
+	// indicating redirection.
 
-	// Set the status code to indicate the redirection.
-	w.WriteHeader(http.StatusSeeOther)
-
-	// Open the file.
-	file, err := os.Open(filePath)
+	file, err := os.Open(filePath) // Open the "root.html" file.
 	if err != nil {
-		log.Print("Error opening root file: ", err)
-		http.Error(w, ISE, http.StatusInternalServerError)
+		log.Print("Error opening root file: ", err)        // Log error if file opening fails.
+		http.Error(w, ISE, http.StatusInternalServerError) // Return a 500 Internal Server Error if the file cannot be opened.
 		return
 	}
-	defer func(file *os.File) {
+	defer func(file *os.File) { // Ensure the file is closed after serving it.
 		err := file.Close()
 		if err != nil {
-			log.Print("Error closing root file: ", err)
-			http.Error(w, ISE, http.StatusInternalServerError)
-			return
+			log.Print("Error closing root file: ", err)        // Log error if file closing fails.
+			http.Error(w, ISE, http.StatusInternalServerError) // Return a 500 Internal Server Error
+			// if the file cannot be closed.
 		}
 	}(file)
 
-	_, err = io.Copy(w, file)
+	_, err = io.Copy(w, file) // Copy the file content to the response writer.
 	if err != nil {
-		log.Print("Error copying root file to ResponseWriter: ", err)
-		http.Error(w, ISE, http.StatusInternalServerError)
+		log.Print("Error copying root file to ResponseWriter: ", err) // Log error if copying fails.
+		http.Error(w, ISE, http.StatusInternalServerError)            // Return a 500 Internal Server Error
+		// if content cannot be copied.
 		return
 	}
 }
