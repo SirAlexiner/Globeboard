@@ -126,6 +126,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	cie.Country = reg.Country
 	cie.IsoCode = reg.IsoCode
 	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
 
 	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.Registrations, Webhooks.EventRegister) // Send webhook notifications
 }
