@@ -17,6 +17,10 @@ default:
   before_script:
     # Display Docker info
     - docker info
+    # Change directory to Go directory
+    - cd ./Go/
+    # Shut down all services
+    - docker compose down
 
 # Define variables
 variables:
@@ -80,8 +84,6 @@ Deploy:
   before_script:
     # Change directory to Go directory
     - cd ./Go/
-    # Shut down all services
-    - docker compose down
     # Install required packages for deployment
     - apk add --no-cache curl bash
     # Download secure files
