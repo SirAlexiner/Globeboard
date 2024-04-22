@@ -1,11 +1,8 @@
-// Package Paths provides constant paths used in the application.
+// Package Paths defines constant URL paths used within the application to reference different endpoint roots.
 package Paths
 
-// Root represents the root path.
-// Util represents the root path to the util endpoints
-// Dashboard represents the root path to the util stats endpoints
 const (
-	Root      = "/"
-	Util      = "/util/"
-	Dashboard = "/dashboard/"
+	Root       = "/"            // Root represents the root path of the application.
+	Util       = "/util/"       // Util represents the root path to the utility-specific endpoints.
+	Dashboards = "/dashboards/" // Dashboards represent the root path to the dashboard endpoints.
 )

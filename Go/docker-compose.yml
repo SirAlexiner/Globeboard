@@ -1,20 +1,63 @@
-version: '3.8'
+# Docker Compose configuration file for defining services
 
 services:
+  # Main service for globeboard application
   globeboard:
+    # Docker image for globeboard
+    image: globeboard
+    # Build configuration
     build:
+      # Build context
       context: .
+      # Dockerfile location
       dockerfile: Dockerfile
+    # Ports mapping
     ports:
       - '${PORT}:${PORT}'
+    # Restart policy
+    restart: unless-stopped
+    # Environment variables
     environment:
-      - PORT=${PORT}
-      - TOKEN=${TOKEN}
+      # Port number
+      PORT: ${PORT}
+      # Path to Firebase credentials file
+      FIREBASE_CREDENTIALS_FILE: /run/secrets/Firebase
+      # Firestore project ID
+      FIRESTORE_PROJECT_ID: ${FIRESTORE_PROJECT_ID}
+    # Volumes
     volumes:
-      - ./.secrets:/root/.secrets:ro
+      - ./web:/root/web:ro
+    # Secrets configuration
+    secrets:
+      - Firebase
+
+  # Test service for globeboard
   globeboard-test:
+    # Docker image for globeboard test
+    image: globeboard-test
+    # Build configuration
     build:
+      # Build context
       context: .
+      # Dockerfile location
       dockerfile: Dockerfile-test
-    depends_on:
-      - globeboard
+    # Restart policy
+    restart: no
+    # Environment variables
+    environment:
+      # Path to Firebase credentials file
+      FIREBASE_CREDENTIALS_FILE: /run/secrets/Firebase
+      # Firestore project ID
+      FIRESTORE_PROJECT_ID: ${FIRESTORE_PROJECT_ID}
+    # Volumes
+    volumes:
+      - ./web:/root/web:ro
+    # Secrets configuration
+    secrets:
+      - Firebase
+
+# Secret definition
+secrets:
+  Firebase:
+    # Path to Firebase credentials file
+    file: ${FIREBASE_CREDENTIALS_FILE}

@@ -1,0 +1,99 @@
+# GitLab CI configuration file for CI/CD pipeline
+
+# Define stages for the pipeline
+stages:
+  - Build
+  - Test
+  - Deploy
+
+# Default configuration
+default:
+  # Use Docker as the default image
+  image: docker
+  # Enable Docker-in-Docker service
+  services:
+    - name: 'docker:dind'
+  # Before script actions
+  before_script:
+    # Display Docker info
+    - docker info
+
+# Define variables
+variables:
+  # Set Docker TLS certificate directory
+  DOCKER_TLS_CERTDIR: '/certs'
+  # Set path for downloading secure files
+  SECURE_FILES_DOWNLOAD_PATH: './.secrets/'
+
+# Build stage
+Build:
+  stage: Build
+  # Before script actions
+  before_script:
+    # Change directory to Go directory
+    - cd ./Go/
+  # Build script
+  script:
+    # Build the Docker images using Docker Compose
+    - docker compose build
+
+# Test stage
+Test:
+  stage: Test
+  # Before script actions
+  before_script:
+    # Change directory to Go directory
+    - cd ./Go/
+    # Install required packages for testing
+    - apk add --no-cache curl bash
+    # Download secure files
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash > /dev/null 2>&1
+  # Test script
+  script:
+    # Start globeboard-test service and exit with the test result
+    - docker compose up globeboard-test --exit-code-from globeboard-test
+    # Copy the test report from the container to the host
+    - docker compose cp globeboard-test:/root/report.xml ./report.xml
+  # After script actions
+  after_script:
+    # Change directory to Go directory
+    - cd ./Go/
+    # Stop the globeboard-test service
+    - docker compose down globeboard-test
+  # Coverage regex
+  coverage: '/coverage:\s+(\d+\.\d+)%\s+of statements/'
+  # Define artifacts to be stored
+  artifacts:
+    # Define when to store the artifacts
+    when: always
+    # Define paths of the artifacts
+    paths:
+      - ./Go/report.xml
+    # Define test reports
+    reports:
+      junit: ./Go/report.xml
+
+# Deploy stage
+Deploy:
+  stage: Deploy
+  # Before script actions
+  before_script:
+    # Change directory to Go directory
+    - cd ./Go/
+    # Shut down all services
+    - docker compose down
+    # Install required packages for deployment
+    - apk add --no-cache curl bash
+    # Download secure files
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash > /dev/null 2>&1
+  # Deploy script
+  script:
+    # Start the globeboard service in detached mode
+    - docker compose up globeboard -d
+  # After script actions
+  after_script:
+    # Display running Docker containers
+    - docker ps
+  # Define when to trigger the deployment stage
+  only:
+    - main

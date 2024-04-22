@@ -1,3 +1,4 @@
+// Package dashboard provides handlers for managing dashboard-related functionalities through HTTP endpoints.
 package dashboard
 
 import (
@@ -6,6 +7,7 @@ import (
 	"fmt"
 	"globeboard/db"
 	_func "globeboard/internal/func"
+	"globeboard/internal/utils/constants"
 	"globeboard/internal/utils/constants/Endpoints"
 	"globeboard/internal/utils/constants/Webhooks"
 	"globeboard/internal/utils/structs"
@@ -14,175 +16,229 @@ import (
 	"net/http"
 )
 
+// Constants for error and informational messages.
 const (
-	ProvideID = "Please Provide ID"
+	ProvideID                 = "Please Provide ID"               // Message to request ID provision when missing.
+	RegistrationRetrivalError = "Error getting registration: %v"  // Error message template for retrieval issues.
+	RegistrationPatchError    = "Error patching registration: %v" // Error message template for patching issues.
 )
 
-// RegistrationsIdHandler handles HTTP GET requests to retrieve supported languages.
+// RegistrationsIdHandler handles requests for the /registrations/{ID} endpoint.
 func RegistrationsIdHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case http.MethodGet:
+	case http.MethodGet: // Handle GET requests.
 		handleRegGetRequest(w, r)
-	case http.MethodPatch:
+	case http.MethodPatch: // Handle PATCH requests.
 		handleRegPatchRequest(w, r)
-	case http.MethodDelete:
+	case http.MethodDelete: // Handle DELETE requests.
 		handleRegDeleteRequest(w, r)
 	default:
+		// Log and return an error for unsupported HTTP methods
+		log.Printf(constants.ClientConnectUnsupported, Endpoints.RegistrationsID, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodGet+"\n"+http.MethodPatch+"\n"+http.MethodDelete, http.StatusNotImplemented)
 		return
 	}
 }
 
-// handleRegGetRequest handles GET requests to retrieve a registered country.
+// handleRegGetRequest processes GET requests for registration data by ID.
 func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
-	ID := r.PathValue("ID")
-	query := r.URL.Query()
-	token := query.Get("token")
-	if token == "" {
+	ID := r.PathValue("ID")     // Extract the 'ID' parameter from the URL path.
+	query := r.URL.Query()      // Extract the query parameters.
+	token := query.Get("token") // Extract the 'token' parameter from the query.
+	if token == "" {            // Validate token presence.
+		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token)
-	if UUID == "" {
+	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
+	if UUID == "" {                 // Validate UUID presence.
+		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " { // Validate ID presence.
+		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(ID, UUID)
+	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve registration data from the database.
 	if err != nil {
-		log.Print("Error getting document from database: ", err)
-		http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+		log.Printf(RegistrationRetrivalError, err)
+		http.Error(w, "Error retrieving data from database", http.StatusNotFound)
 		return
 	}
 
-	// Set Content-Type header
-	w.Header().Set(ContentType, ApplicationJSON)
+	w.Header().Set(ContentType, ApplicationJSON) // Set the Content-Type header.
 
-	// Write the status code to the response
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK) // Set the HTTP status code to 200.
 
-	// Serialize the struct to JSON and write it to the response
-	err = json.NewEncoder(w).Encode(reg)
+	cie := new(structs.CountryInfoExternal) // Create new external country info struct.
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
+
+	err = json.NewEncoder(w).Encode(cie) // Encode the external country info into JSON and write to the response.
 	if err != nil {
-		// Handle error
+		log.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	_func.LoopSendWebhooks(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventInvoke)
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventInvoke) // Trigger webhooks for the registration.
 }
 
-// handleRegPatchRequest handles PUT requests to Update a registered country.
+// handleRegPatchRequest processes PATCH requests to update registration data by ID.
 func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
-	ID := r.PathValue("ID")
-	query := r.URL.Query()
-	token := query.Get("token")
-	if token == "" {
+	ID := r.PathValue("ID")     // Extract the 'ID' parameter from the URL path.
+	query := r.URL.Query()      // Extract the query parameters.
+	token := query.Get("token") // Extract the 'token' parameter from the query.
+	if token == "" {            // Validate token presence.
+		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token)
-	if UUID == "" {
+	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
+	if UUID == "" {                 // Validate UUID presence.
+		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " { // Validate ID presence.
+		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
-	if r.Body == nil {
+	if r.Body == nil { // Validate that the request body is not empty.
+		log.Printf(constants.ClientConnectEmptyBody, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf("Please send a request body")
 		http.Error(w, err, http.StatusBadRequest)
 		return
 	}
 
-	countryInfo, err, errcode := patchCountryInformation(r, ID, UUID)
+	ci, err, errcode := patchCountryInformation(r, ID, UUID) // Process the patch request.
 	if err != nil {
-		err := fmt.Sprintf("Error patching data together: %v", err)
+		log.Printf(RegistrationPatchError, err)
+		err := fmt.Sprintf(RegistrationPatchError, err)
 		http.Error(w, err, errcode)
 		return
 	}
 
-	err = _func.ValidateCountryInfo(countryInfo)
+	err = _func.ValidateCountryInfo(ci) // Validate the patched country information.
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Printf(RegistrationPatchError, err)
+		err := fmt.Sprintf(RegistrationPatchError, err)
+		http.Error(w, err, http.StatusBadRequest)
 		return
 	}
 
-	err = db.UpdateRegistration(ID, UUID, countryInfo)
+	err = db.UpdateRegistration(ID, UUID, ci) // Update the registration in the database.
 	if err != nil {
+		log.Printf("Error saving patched data to database: %v", err)
 		err := fmt.Sprintf("Error saving patched data to database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
+	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the updated registration.
+	if err != nil {
+		log.Printf(RegistrationRetrivalError, err)
+		err := fmt.Sprint("Error retrieving updated document: ", err)
+		http.Error(w, err, http.StatusNotFound)
+		return
+	}
 
-	_func.LoopSendWebhooks(UUID, countryInfo, Endpoints.RegistrationsID, Webhooks.EventChange)
+	cie := new(structs.CountryInfoExternal) // Create new external country info struct.
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
+
+	w.Header().Set("content-type", "application/json") // Set the Content-Type header.
+	w.WriteHeader(http.StatusAccepted)                 // Set the HTTP status code to 202.
+
+	response := map[string]interface{}{
+		"lastChange": cie.Lastchange, // Prepare the response data.
+	}
+
+	err = json.NewEncoder(w).Encode(response) // Encode the response data into JSON and write to the response.
+	if err != nil {
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventChange) // Trigger webhooks for the change event.
 }
 
-func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoGet, error, int) {
-	reg, err := db.GetSpecificRegistration(ID, UUID)
+// patchCountryInformation updates the country information based on the provided patch data.
+func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoInternal, error, int) {
+	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the specific registration.
 	if err != nil {
+		log.Printf(RegistrationRetrivalError, err)
+		return nil, err, http.StatusNotFound
+	}
+
+	bytes, err := json.Marshal(reg) // Marshal the registration data to JSON bytes.
+	if err != nil {
+		log.Print(err)
 		return nil, err, http.StatusInternalServerError
 	}
 
-	bytes, err := json.Marshal(reg)
-	if err != nil {
-		return nil, err, http.StatusInternalServerError
-	}
-
-	var originalData map[string]interface{}
+	var originalData map[string]interface{} // Unmarshal the JSON bytes back to a map.
 	err = json.Unmarshal(bytes, &originalData)
 	if err != nil {
+		log.Print(err)
 		return nil, err, http.StatusInternalServerError
 	}
 
-	all, err := io.ReadAll(r.Body)
+	all, err := io.ReadAll(r.Body) // Read all data from the request body.
 	if err != nil {
+		log.Print(err)
 		return nil, err, http.StatusInternalServerError
 	}
 
-	var patchData map[string]interface{}
+	var patchData map[string]interface{} // Unmarshal the patch data from the request body.
 	err = json.Unmarshal(all, &patchData)
 	if err != nil {
+		log.Print(err)
 		return nil, err, http.StatusInternalServerError
 	}
 
-	patchFeatures, err, errcode := validatePatchData(patchData, originalData)
+	patchFeatures, err, errcode := validatePatchData(patchData, originalData) // Validate and extract the patch data.
 	if err != nil {
 		return nil, err, errcode
 	}
 
-	if originalData["features"] != nil {
+	if originalData["features"] != nil { // Merge the patch features into the original features.
 		originalFeatures := originalData["features"].(map[string]interface{})
 		for key, value := range patchFeatures {
 			originalFeatures[key] = value
 		}
 	}
 
-	// Marshal the original data back to JSON.
-	jsonData, err := json.Marshal(originalData)
+	jsonData, err := json.Marshal(originalData) // Marshal the updated data to JSON.
 	if err != nil {
+		log.Print(err)
 		return nil, err, http.StatusInternalServerError
 	}
 
-	// Unmarshal the JSON data into the CountryInfoGet struct.
-	var countryInfo *structs.CountryInfoGet
+	var countryInfo *structs.CountryInfoInternal // Unmarshal the JSON data to a CountryInfoInternal struct.
 	err = json.Unmarshal(jsonData, &countryInfo)
 	if err != nil {
+		log.Print(err)
 		return nil, err, http.StatusInternalServerError
 	}
 	return countryInfo, nil, http.StatusOK
 }
 
+// validatePatchData checks the validity of the patch data against the original data.
 func validatePatchData(patchData map[string]interface{}, originalData map[string]interface{}) (map[string]interface{}, error, int) {
 	// Check if "country" or "isoCode" fields are provided and if they are non-empty and differ from the original data.
 	if country, ok := patchData["country"]; ok {
@@ -191,9 +247,9 @@ func validatePatchData(patchData map[string]interface{}, originalData map[string
 		}
 	}
 
-	if isoCode, ok := patchData["isoCode"]; ok {
-		if isoCodeStr, isStr := isoCode.(string); isStr && isoCodeStr != "" && originalData["isoCode"] != isoCode {
-			return nil, errors.New("modification of 'isoCode' field is not allowed"), http.StatusBadRequest
+	if isoCode, ok := patchData["isocode"]; ok {
+		if isoCodeStr, isStr := isoCode.(string); isStr && isoCodeStr != "" && originalData["isocode"] != isoCode {
+			return nil, errors.New("modification of 'isocode' field is not allowed"), http.StatusBadRequest
 		}
 	}
 
@@ -209,40 +265,53 @@ func validatePatchData(patchData map[string]interface{}, originalData map[string
 	return patchFeatures, nil, http.StatusOK
 }
 
+// handleRegDeleteRequest processes DELETE requests to remove registration data by ID.
 func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
-	ID := r.PathValue("ID")
-	query := r.URL.Query()
-	token := query.Get("token")
-	if token == "" {
+	ID := r.PathValue("ID")     // Extract the 'ID' parameter from the URL path.
+	query := r.URL.Query()      // Extract the query parameters.
+	token := query.Get("token") // Extract the 'token' parameter from the query.
+	if token == "" {            // Validate token presence.
+		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token)
-	if UUID == "" {
+	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
+	if UUID == "" {                 // Validate UUID presence.
+		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	if ID == "" {
+	if ID == "" || ID == " " { // Validate ID presence.
+		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(ID, UUID)
+	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the specific registration to be deleted.
 	if err != nil {
-		err := fmt.Sprint("Document doesn't exist: ", err)
+		log.Printf(RegistrationRetrivalError, err)
+		err := fmt.Sprint("Error getting registration: ", err)
 		http.Error(w, err, http.StatusNotFound)
 		return
 	}
 
-	err = db.DeleteRegistration(ID, UUID)
+	err = db.DeleteRegistration(ID, UUID) // Delete the registration from the database.
 	if err != nil {
-		err := fmt.Sprintf("Error deleting data from database: %v", err)
+		log.Printf("Error deleting registration from database: %v", err)
+		err := fmt.Sprintf("Error deleting registration from database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusNoContent) // Set the HTTP status code to 204 (No Content).
 
-	_func.LoopSendWebhooks(UUID, reg, Endpoints.RegistrationsID, Webhooks.EventDelete)
+	cie := new(structs.CountryInfoExternal) // Create new external country info struct.
+	cie.ID = reg.ID
+	cie.Country = reg.Country
+	cie.IsoCode = reg.IsoCode
+	cie.Features = reg.Features
+	cie.Lastchange = reg.Lastchange
+
+	_func.LoopSendWebhooksRegistrations(UUID, cie, Endpoints.RegistrationsID, Webhooks.EventDelete) // Trigger webhooks for the delete event.
 }

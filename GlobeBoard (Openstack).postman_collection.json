@@ -1,0 +1,600 @@
+{
+	"info": {
+		"_postman_id": "8200f1ea-1d74-4172-9b92-cf2aab793249",
+		"name": "GlobeBoard (Openstack)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33039772"
+	},
+	"item": [
+		{
+			"name": "root",
+			"item": [
+				{
+					"name": "Root (Openstack)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.171.74:8080/",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Register",
+			"item": [
+				{
+					"name": "Register User (Openstack)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "User @ Openstack",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "User@stud.ntnu.no",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "321Bananer?!",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/util/v1/user/register",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"util",
+								"v1",
+								"user",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User (Localhost)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.174.226:8080/util/v1/user/delete/FNkO9jnXieeJdJgWlR1ywZQdn2F3",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"174",
+								"226"
+							],
+							"port": "8080",
+							"path": [
+								"util",
+								"v1",
+								"user",
+								"delete",
+								"FNkO9jnXieeJdJgWlR1ywZQdn2F3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Key",
+			"item": [
+				{
+					"name": "API Key Get (Openstack)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "A8iAepCGNahMowqbevaoZDLoFTC2",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://10.212.171.74:8080/util/v1/key",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"util",
+								"v1",
+								"key"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API Key Delete (Openstack)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "A8iAepCGNahMowqbevaoZDLoFTC2",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://10.212.171.74:8080/util/v1/key?token=sk-jRle0weXUotOITXnVqMRtTRjPvfCFQtb8B6McDi4jaKsXi",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"util",
+								"v1",
+								"key"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-jRle0weXUotOITXnVqMRtTRjPvfCFQtb8B6McDi4jaKsXi"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Registrations",
+			"item": [
+				{
+					"name": "Registration Post (Openstack)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"country\": \"Norway\",\r\n   \"isoCode\": \"NO\",\r\n   \"features\": {\r\n                  \"temperature\": true, // this value is to be changed\r\n                  \"precipitation\": true,\r\n                  \"capital\": true,\r\n                  \"coordinates\": true, \r\n                  \"population\": true,\r\n                  \"area\": true,\r\n                  \"targetCurrencies\": [\"EUR\", \"SEK\"] // this value is to be changed\r\n               }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/registrations?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"registrations"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration Get All (Openstack)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/registrations?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"registrations"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration Get specific (Openstack)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/registrations/XsdB3SfQMMT6zRQYbeuF?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"registrations",
+								"XsdB3SfQMMT6zRQYbeuF"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration Patch (Openstack)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"features\": {\r\n        \"targetCurrencies\": [\"EUR\", \"SEK\", \"EUR\", \"USD\", \"JPY\"]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/registrations/XsdB3SfQMMT6zRQYbeuF?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"registrations",
+								"XsdB3SfQMMT6zRQYbeuF"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration Delete (Openstack)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/registrations/XsdB3SfQMMT6zRQYbeuF?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"registrations",
+								"XsdB3SfQMMT6zRQYbeuF"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Dashboard Get (Openstack)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/dashboard/XsdB3SfQMMT6zRQYbeuF?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"dashboard",
+								"XsdB3SfQMMT6zRQYbeuF"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Notifications Get Specific (Openstack)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/notifications/D5rF04PkyCgY0dppjzAY?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"notifications",
+								"D5rF04PkyCgY0dppjzAY"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Notifications Delete (Openstack)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/notifications/D5rF04PkyCgY0dppjzAY?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"notifications",
+								"D5rF04PkyCgY0dppjzAY"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Notifications Get All (Openstack)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/notifications?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Notifications Post (Openstack)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"url\": \"webhook.com/\",\r\n   \"country\": \"\",\r\n   \"event\": [\"INVOKE\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/notifications?token=sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-7nitVmcWVrpvHYvcrmC0tTRjPvlb19wKBCynx5ZQ6lemrg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Status",
+			"item": [
+				{
+					"name": "Status (Openstack)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://10.212.171.74:8080/dashboards/v1/status?token=sk-owVa9zHyH5U23Kj5mhAStTRjPvitfmC4nAXWRutxOpVaUE",
+							"protocol": "http",
+							"host": [
+								"10",
+								"212",
+								"171",
+								"74"
+							],
+							"port": "8080",
+							"path": [
+								"dashboards",
+								"v1",
+								"status"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "sk-owVa9zHyH5U23Kj5mhAStTRjPvitfmC4nAXWRutxOpVaUE"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

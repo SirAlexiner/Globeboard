@@ -1,11 +1,8 @@
-// Package External provides external API endpoints used in the application.
+// Package External defines constants for URLs to external API endpoints used within the application.
 package External
 
-// CurrencyAPI represents the endpoint for the Currency API.
-// OpenMeteoAPI represents the endpoint for the Open-Meteo API.
-// CountriesAPI represents the endpoint for the RESTCountries API.
 const (
-	CurrencyAPI  = "http://129.241.150.113:9090/currency/"
-	OpenMeteoAPI = "https://google.com/" //TODO::Set Actual API Endpoint
-	CountriesAPI = "http://129.241.150.113:8080/v3.1/"
+	CurrencyAPI  = "http://129.241.150.113:9090/currency/"  // CurrencyAPI specifies the endpoint URL for the Currency API.
+	OpenMeteoAPI = "https://api.open-meteo.com/v1/forecast" // OpenMeteoAPI specifies the endpoint URL for the Open-Meteo API.
+	CountriesAPI = "http://129.241.150.113:8080/v3.1/"      // CountriesAPI specifies the endpoint URL for the RESTCountries API.
 )

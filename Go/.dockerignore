@@ -88,7 +88,7 @@ ehthumbs.db
 Thumbs.db
 
 # Personal ignore patterns
-**/firebasecredentials.json
+**/firebaseCredentials.json
 **/.secrets
 .env
 

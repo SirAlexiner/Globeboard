@@ -1,17 +1,37 @@
-# Use the official Golang image as a parent image
-FROM golang:1.22
+# syntax=docker/dockerfile:1.2
 
-# Set the working directory inside the container
+# Define the base image and setup build environment
+FROM golang:1.22 AS builder
+
+# Define Authors
+LABEL authors="Torgrim Thorsen"
+
+# Set the working directory
 WORKDIR /app
 
-# Download Go modules
+# Copy go modules for dependencies
 COPY go.mod go.sum ./
 
-# Download Go module dependencies
-RUN go mod download
-
-# Copy the rest of the service's source code
+# Copy the source code
 COPY ../ ./
 
-# Specify the command to run tests
-CMD ["go", "test", "./..."]
+# Build the test binary
+RUN CGO_ENABLED=0 GOOS=linux go test -cover -coverpkg=./... -c -installsuffix cgo -o test ./cmd/globeboard
+
+# Use a minimal alpine image for the final build stage
+FROM golang:1.22-alpine
+
+# Install CA certificates and Go
+RUN apk --no-cache add ca-certificates
+
+# Install Go JUnit report tool
+RUN go install github.com/jstemmer/go-junit-report/v2@latest
+
+# Set the working directory
+WORKDIR /root/
+
+# Copy the pre-built test binary from the previous stage
+COPY --from=builder /app/test .
+
+# Define the command to run the tests and generate JUnit report
+CMD ./test -test.v | go-junit-report > report.xml && ./test -test.v

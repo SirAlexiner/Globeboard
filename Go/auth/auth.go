@@ -1,37 +1,33 @@
+// Package authenticate provides functionality for initializing and accessing Firebase Authentication.
 package authenticate
 
 import (
 	"context"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
-	"globeboard/internal/utils/constants"
 	"google.golang.org/api/option"
 	"log"
+	"os"
 )
 
 var (
-	// Use a context for Firebase operations
-	ctx = context.Background()
+	ctx    = context.Background() // Background context for Firebase operations
+	Client *auth.Client           // Singleton Firebase Authentication client
 )
 
-func GetFireBaseAuthClient() (*auth.Client, error) {
-	// Using the credential file
-	sa := option.WithCredentialsFile(constants.FirebaseCredentialPath)
+func init() {
+	// Load Firebase service account credentials from environment variable
+	sa := option.WithCredentialsFile(os.Getenv("FIREBASE_CREDENTIALS_FILE"))
+
+	// Initialize Firebase app with the loaded credentials
 	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
-		log.Println("Credentials not found: " + constants.FirebaseCredentialPath)
-		log.Println("Error on getting the application")
-		return nil, err
+		log.Panic("Firebase Failed to initialize: ", err)
 	}
 
-	//No initial error, so a client is used to gather other information
-	client, err := app.Auth(ctx)
+	// Initialize the Firebase Authentication client
+	Client, err = app.Auth(ctx)
 	if err != nil {
-		// Logging the error
-		log.Println("Credentials file: '" + constants.FirebaseCredentialPath + "' lead to an error.")
-		return nil, err
+		log.Panic("Firebase Failed to initialize Authentication client: ", err)
 	}
-
-	// No errors, so we return the test client and no error
-	return client, nil
 }
