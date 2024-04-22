@@ -87,7 +87,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://10.212.174.226:8080/util/v1/user/delete/FNkO9jnXieeJdJgWlR1ywZQdn2F3",
+							"raw": "http://10.212.171.74:8080/util/v1/user/delete/FNkO9jnXieeJdJgWlR1ywZQdn2F3",
 							"protocol": "http",
 							"host": [
 								"10",
