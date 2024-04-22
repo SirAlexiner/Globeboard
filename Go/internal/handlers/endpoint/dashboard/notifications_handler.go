@@ -22,7 +22,7 @@ func NotificationsHandler(w http.ResponseWriter, r *http.Request) {
 		handleNotifGetAllRequest(w, r)
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.Notifications, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.Notifications, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodPost+"\n"+http.MethodGet, http.StatusNotImplemented)
 		return
 	}
@@ -33,20 +33,20 @@ func handleNotifPostRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Retrieve token from the URL query parameters.
 	if token == "" {            // Check if a token is provided.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.Notifications)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
 	if UUID == "" {                 // Check if UUID is valid.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.Notifications)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 
 	if r.Body == nil { // Check if request body is empty.
-		log.Printf(constants.ClientConnectEmptyBody, r.Method, Endpoints.Notifications)
+		log.Printf(constants.ClientConnectEmptyBody, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		err := fmt.Sprintf("Please send a request body")
 		http.Error(w, err, http.StatusBadRequest)
 		return
@@ -100,20 +100,20 @@ func handleNotifGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Retrieve token from the URL query parameters.
 	if token == "" {            // Check if a token is provided.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.Notifications)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
 	if UUID == "" {                 // Check if UUID is valid.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.Notifications)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	regs, err := db.GetWebhooksUser(UUID) // Retrieve all webhooks associated with the user (UUID).
 	if err != nil {
-		log.Printf("Error retrieving webhooks from database: %v", err)
+		log.Printf("%s: Error retrieving webhooks from database: %v", r.RemoteAddr, err)
 		errmsg := fmt.Sprint("Error retrieving webhooks from database: ", err)
 		http.Error(w, errmsg, http.StatusInternalServerError)
 		return

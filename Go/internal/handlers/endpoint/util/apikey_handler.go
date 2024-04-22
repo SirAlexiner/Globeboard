@@ -23,7 +23,7 @@ func APIKeyHandler(w http.ResponseWriter, r *http.Request) {
 		handleApiKeyDeleteRequest(w, r)
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.ApiKey, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.ApiKey, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint are: GET, DELETE", http.StatusNotImplemented)
 		return
 	}
@@ -40,21 +40,21 @@ func handleApiKeyDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	_, err := authenticate.Client.GetUser(ctx, UUID) // Verify the UUID with Firebase Authentication.
 	if err != nil {
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.ApiKey)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.ApiKey)
 		log.Printf("Error verifying UUID: %v\n", err)
 		http.Error(w, "Not Authorized", http.StatusUnauthorized) // Respond with unauthorized if UUID is invalid.
 		return
 	}
 
 	if token == "" || token == " " { // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.ApiKey)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.ApiKey)
 		http.Error(w, "Please specify API Key to delete: '?token={API_Key}'", http.StatusBadRequest)
 		return
 	}
 
 	err = db.DeleteApiKey(UUID, token) // Attempt to delete the API key.
 	if err != nil {
-		log.Printf("Error deleting API Key: %v", err)
+		log.Printf("%s: Error deleting API Key: %v", r.RemoteAddr, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError) // Respond with internal server error if deletion fails.
 		return
 	}
@@ -75,15 +75,15 @@ func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
 
 	_, err := authenticate.Client.GetUser(ctx, UUID) // Verify the UUID with Firebase Authentication.
 	if err != nil {
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.ApiKey)
-		log.Printf("Error verifying UUID: %v\n", err)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.ApiKey)
+		log.Printf("%s: Error verifying UUID: %v\n", r.RemoteAddr, err)
 		http.Error(w, "Not Authorized", http.StatusUnauthorized) // Respond with unauthorized if UUID is invalid.
 		return
 	}
 
 	err = db.AddApiKey(UDID, UUID, key) // Attempt to add the new API key to the database.
 	if err != nil {
-		log.Printf("Error creating API Key: %v", err)
+		log.Printf("%s: Error creating API Key: %v", r.RemoteAddr, err)
 		errorMessage := fmt.Sprintf("Error creating API Key: %v", err)
 		http.Error(w, errorMessage, http.StatusInternalServerError) // Respond with internal server error if addition fails.
 		return

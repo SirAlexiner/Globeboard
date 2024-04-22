@@ -27,7 +27,7 @@ func DashboardsIdHandler(w http.ResponseWriter, r *http.Request) {
 		handleDashboardGetRequest(w, r)
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.DashboardsID, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.DashboardsID, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodGet, http.StatusNotImplemented)
 		return
 	}
@@ -39,26 +39,26 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Retrieve token from URL query parameters.
 	if token == "" {            // Check if a token is provided.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.DashboardsID)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.DashboardsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with API token.
 	if UUID == "" {                 // Check if UUID is retrieved.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.DashboardsID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.DashboardsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	if ID == "" || ID == " " { // Check if the ID is valid.
-		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.DashboardsID)
+		log.Printf(constants.ClientConnectNoID, r.RemoteAddr, r.Method, Endpoints.DashboardsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve registration by ID for user (UUID).
 	if err != nil {
-		log.Printf("Error getting registration: %v", err)
+		log.Printf("%s: Error getting registration: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Dashboard doesn't exist: %v", err)
 		http.Error(w, err, http.StatusNotFound)
 		return

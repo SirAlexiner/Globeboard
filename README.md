@@ -732,6 +732,7 @@ cd globeboard/Go/
 - Implement more secure registration for users to the application.
   - Actual authentication of users before registration.
   - Implement check if user has authenticated before registration.
+- Allow user groups to share API token.
       
 ## Contributing
 

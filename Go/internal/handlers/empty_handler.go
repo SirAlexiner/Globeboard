@@ -27,23 +27,23 @@ func EmptyHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := os.Open(filePath) // Open the "root.html" file.
 	if err != nil {
-		log.Print("Error opening root file: ", err)        // Log error if file opening fails.
-		http.Error(w, ISE, http.StatusInternalServerError) // Return a 500 Internal Server Error if the file cannot be opened.
+		log.Printf("%s: Error opening root file: %v", r.RemoteAddr, err) // Log error if file opening fails.
+		http.Error(w, ISE, http.StatusInternalServerError)               // Return a 500 Internal Server Error if the file cannot be opened.
 		return
 	}
 	defer func(file *os.File) { // Ensure the file is closed after serving it.
 		err := file.Close()
 		if err != nil {
-			log.Print("Error closing root file: ", err)        // Log error if file closing fails.
-			http.Error(w, ISE, http.StatusInternalServerError) // Return a 500 Internal Server Error
+			log.Printf("%s: Error closing root file: %v", r.RemoteAddr, err) // Log error if file closing fails.
+			http.Error(w, ISE, http.StatusInternalServerError)               // Return a 500 Internal Server Error
 			// if the file cannot be closed.
 		}
 	}(file)
 
 	_, err = io.Copy(w, file) // Copy the file content to the response writer.
 	if err != nil {
-		log.Print("Error copying root file to ResponseWriter: ", err) // Log error if copying fails.
-		http.Error(w, ISE, http.StatusInternalServerError)            // Return a 500 Internal Server Error
+		log.Printf("%s: Error copying root file to ResponseWriter: %v", r.RemoteAddr, err) // Log error if copying fails.
+		http.Error(w, ISE, http.StatusInternalServerError)                                 // Return a 500 Internal Server Error
 		// if content cannot be copied.
 		return
 	}

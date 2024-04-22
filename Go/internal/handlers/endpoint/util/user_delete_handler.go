@@ -17,7 +17,7 @@ func UserDeletionHandler(w http.ResponseWriter, r *http.Request) {
 		deleteUser(w, r) // Handle DELETE requests
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.UserDeletionID, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.UserDeletionID, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported method for this endpoint is:\n"+http.MethodDelete, http.StatusNotImplemented)
 		return
 	}
@@ -27,7 +27,7 @@ func UserDeletionHandler(w http.ResponseWriter, r *http.Request) {
 func deleteUser(w http.ResponseWriter, r *http.Request) {
 	ID := r.PathValue("ID")    // Extract user ID from the URL path.
 	if ID == "" || ID == " " { // Check if the user ID is provided.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.UserDeletionID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.UserDeletionID)
 		http.Error(w, "Please provide User ID", http.StatusBadRequest) // Return an error if user ID is missing.
 		return
 	}
@@ -36,11 +36,11 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 
 	err := authenticate.Client.DeleteUser(ctx, ID) // Attempt to delete user in Firebase.
 	if err != nil {
-		log.Printf("Error deleting user: %v\n", err)               // Log the error.
-		http.Error(w, err.Error(), http.StatusInternalServerError) // Report deletion error.
+		log.Printf("%s: Error deleting user: %v\n", r.RemoteAddr, err) // Log the error.
+		http.Error(w, err.Error(), http.StatusInternalServerError)     // Report deletion error.
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)               // Set HTTP status to 204 No Content on successful deletion.
-	log.Printf("Successfully deleted user: %v\n", ID) // Log successful deletion.
+	w.WriteHeader(http.StatusNoContent)                                 // Set HTTP status to 204 No Content on successful deletion.
+	log.Printf("%s: Successfully deleted user: %v\n", r.RemoteAddr, ID) // Log successful deletion.
 }

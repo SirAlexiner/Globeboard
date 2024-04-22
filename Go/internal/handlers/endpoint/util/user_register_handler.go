@@ -26,7 +26,7 @@ func UserRegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		registerUser(w, r) // Handle POST requests
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.UserRegistration, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.UserRegistration, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodPost, http.StatusNotImplemented)
 		return
 	}
@@ -40,14 +40,14 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 
 	if !isValidEmail(email) { // Validate the email.
 		// Log a message indicating that a client attempted to register using a malformed email.
-		log.Printf("Client attempted to register a user with malformed email.")
+		log.Printf("%s attempted to register a user with malformed email.", r.RemoteAddr)
 		http.Error(w, "Invalid email format", http.StatusBadRequest)
 		return
 	}
 
 	if !isValidPassword(password) { // Validate password strength.
 		// Log a message indicating that a client attempted to register using a weak password.
-		log.Printf("Client attempted to register a user with a weak password.")
+		log.Printf("%s attempted to register a user with a weak password.", r.RemoteAddr)
 		http.Error(w, "Password does not meet complexity requirements", http.StatusBadRequest)
 		return
 	}
@@ -62,8 +62,8 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 
 	u, err := authenticate.Client.CreateUser(ctx, params) // Attempt to create user in Firebase.
 	if err != nil {
-		log.Printf("Error creating user: %v\n", err)               // Log the error.
-		http.Error(w, err.Error(), http.StatusInternalServerError) // Report creation error.
+		log.Printf("%s: Error creating user: %v\n", r.RemoteAddr, err) // Log the error.
+		http.Error(w, err.Error(), http.StatusInternalServerError)     // Report creation error.
 		return
 	}
 
@@ -74,8 +74,8 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 
 	err = db.AddApiKey(UDID, u.UID, key) // Store the new API key in the database.
 	if err != nil {
-		log.Printf("Error saving API Key: %v\n", err)      // Log the error.
-		http.Error(w, ISE, http.StatusInternalServerError) // Report API key storage error.
+		log.Printf("%s Error saving API Key: %v\n", r.RemoteAddr, err) // Log the error.
+		http.Error(w, ISE, http.StatusInternalServerError)             // Report API key storage error.
 		return
 	}
 
@@ -93,13 +93,13 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)  // Initialize JSON encoder.
 	err = encoder.Encode(response) // Encode the response as JSON.
 	if err != nil {
-		log.Printf("Error encoding JSON response: %v\n", err) // Log encoding error.
-		http.Error(w, ISE, http.StatusInternalServerError)    // Report encoding error.
+		log.Printf("%s: Error encoding JSON response: %v\n", r.RemoteAddr, err) // Log encoding error.
+		http.Error(w, ISE, http.StatusInternalServerError)                      // Report encoding error.
 		return
 	}
 
 	// Log successful creation events.
-	log.Printf("Successfully created user: %v with API Key: %v\n", response.UserID, response.Token)
+	log.Printf("%s: Successfully created user: %v with API Key: %v\n", r.RemoteAddr, response.UserID, response.Token)
 }
 
 // isValidEmail checks if the provided email string matches the expected format.
