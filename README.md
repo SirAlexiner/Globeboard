@@ -7,7 +7,7 @@
 [![coverage report](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/badges/main/coverage.svg)](https://git.gvk.idi.ntnu.no/Nintendo_Alex/globeboard_cicd/-/commits/main)
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC_BY--NC--ND_4.0-green.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
-GlobeBoard Go REST API is a webapplication REST API service designed to provide GeoLocational Information.
+GlobeBoard Go REST API is a REST API service designed to provide GeoLocational Information.
 
 ## Authors
 This code was developed by:
@@ -17,9 +17,11 @@ This code was developed by:
 
 - User Registration through Firestore Auth
 - API Key Access
-- GitLab CI/CD Integration
+- GitLab CI/CD Testing and Deployment
 - Docker Compose Containerization
 - Discord Webhook Integration
+
+![App Screenshot](Discord_Webhook_Example.jpg)
 
 ## Tech Stack
 
@@ -27,6 +29,11 @@ This code was developed by:
 - **Language:** Go
 
 ### Deployment
+
+Project is hosted on NTNU Openstack: [NTNU Openstack](http://10.212.171.74:8080/)
+
+Must be connected to NTNU Internal Network to access.
+
 - **Platform:** OpenStack
 - **Containerization:** Docker Compose
     - **Description:** Services are containerized using Docker Compose to facilitate easy deployment and scaling.
@@ -584,6 +591,29 @@ To run this project, you will need to add the following environment variables to
 
 `FIRESTORE_PROJECT_ID` - Project ID from Google Firebase that contains Firestore.
 
+## Test in Postman (Against Hosted Site)
+
+- Clone the repository
+
+```bash
+  git clone git@git.gvk.idi.ntnu.no:course/prog2005/prog2005-2024-workspace/nintendo_alex/globeboard.git
+```
+
+ - Navigate to the project directory:
+
+    ```bash
+    cd globeboard
+    ```
+ - Copy the Postman collection:
+   ```bash
+    cp ./GlobeBoard (Openstack).postman_collection.json ~
+    ```
+ - In Postman:
+   - Menu (Top Right) -> File -> Import.
+   - Select the copied file.
+ 
+NOTE: Must be connected to NTNU internal Network.
+
 ## Run Locally
 
 - Clone the repository
@@ -696,6 +726,12 @@ cd globeboard/Go/
       ```bash
       docker compose down globeboard-test
       ```
+
+## Roadmap
+
+- Implement more secure registration for users to the application.
+  - Actual authentication of users before registration.
+  - Implement check if user has authenticated before registration.
       
 ## Contributing
 
