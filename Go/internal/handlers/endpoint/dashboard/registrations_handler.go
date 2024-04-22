@@ -32,7 +32,7 @@ func RegistrationsHandler(w http.ResponseWriter, r *http.Request) {
 		handleRegGetAllRequest(w, r) // Handle GET requests
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.Registrations, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.Registrations, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodPost+"\n"+http.MethodGet+"\n"+http.MethodPatch, http.StatusNotImplemented)
 		return
 	}
@@ -58,20 +58,20 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Extract the 'token' parameter from the query.
 	if token == "" {            // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.Registrations)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
 	if UUID == "" {                 // Validate UUID presence.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.Registrations)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 
 	if r.Body == nil { // Validate that the request body is not empty.
-		log.Printf(constants.ClientConnectEmptyBody, r.Method, Endpoints.Registrations)
+		log.Printf(constants.ClientConnectEmptyBody, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		err := fmt.Sprintf("Please send a request body")
 		http.Error(w, err, http.StatusBadRequest)
 		return
@@ -79,7 +79,7 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 
 	ci, err := DecodeCountryInfo(r.Body) // Decode request body into CountryInfoInternal struct.
 	if err != nil {
-		log.Printf("Error decoding request body: %v", err)
+		log.Printf("%s: Error decoding request body: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error decoding request body: %v", err)
 		http.Error(w, err, http.StatusBadRequest)
 		return
@@ -136,20 +136,20 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Extract the 'token' parameter from the query.
 	if token == "" {            // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.Registrations)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Extract the UUID parameter from the API token.
 	if UUID == "" {                 // Validate UUID presence.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.Registrations)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	regs, err := db.GetRegistrations(UUID) // Retrieve the user's Registrations.
 	if err != nil {
-		log.Printf("Error retrieving documents from database: %s", err)
+		log.Printf("%s: Error retrieving documents from database: %s", r.RemoteAddr, err)
 		errmsg := fmt.Sprint("Error retrieving documents from database: ", err)
 		http.Error(w, errmsg, http.StatusInternalServerError)
 		return

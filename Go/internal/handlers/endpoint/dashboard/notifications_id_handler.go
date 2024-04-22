@@ -20,7 +20,7 @@ func NotificationsIdHandler(w http.ResponseWriter, r *http.Request) {
 		handleNotifDeleteRequest(w, r)
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.NotificationsID, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.NotificationsID, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint are:\n"+http.MethodGet+"\n"+http.MethodDelete, http.StatusNotImplemented)
 		return
 	}
@@ -32,26 +32,26 @@ func handleNotifGetRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Retrieve token from the URL query parameters.
 	if token == "" {            // Check if a token is provided.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.NotificationsID)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
 	if UUID == "" {                 // Check if UUID is valid.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.NotificationsID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	if ID == "" || ID == " " { // Check if the ID is valid.
-		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.NotificationsID)
+		log.Printf(constants.ClientConnectNoID, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	hook, err := db.GetSpecificWebhook(ID, UUID) // Retrieve the specific webhook by ID and UUID.
 	if err != nil {
-		log.Printf("Error getting webhook from database: %v", err)
+		log.Printf("%s: Error getting webhook from database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error getting webhook from database: %v", err)
 		http.Error(w, err, http.StatusNotFound)
 		return
@@ -75,26 +75,26 @@ func handleNotifDeleteRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Retrieve token from the URL query parameters.
 	if token == "" {            // Check if a token is provided.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.NotificationsID)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
 	if UUID == "" {                 // Check if UUID is valid.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.NotificationsID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	if ID == "" || ID == " " { // Check if the ID is valid.
-		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.NotificationsID)
+		log.Printf(constants.ClientConnectNoID, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	err := db.DeleteWebhook(ID, UUID) // Delete the specific webhook by ID and UUID from the database.
 	if err != nil {
-		log.Printf("Error deleting data from database: %v", err)
+		log.Printf(" %s: Error deleting data from database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error deleting data from database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return

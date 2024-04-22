@@ -18,9 +18,9 @@ import (
 
 // Constants for error and informational messages.
 const (
-	ProvideID                 = "Please Provide ID"               // Message to request ID provision when missing.
-	RegistrationRetrivalError = "Error getting registration: %v"  // Error message template for retrieval issues.
-	RegistrationPatchError    = "Error patching registration: %v" // Error message template for patching issues.
+	ProvideID                 = "Please Provide ID"                   // Message to request ID provision when missing.
+	RegistrationRetrivalError = "%s: Error getting registration: %v"  // Error message template for retrieval issues.
+	RegistrationPatchError    = "%s: Error patching registration: %v" // Error message template for patching issues.
 )
 
 // RegistrationsIdHandler handles requests for the /registrations/{ID} endpoint.
@@ -34,7 +34,7 @@ func RegistrationsIdHandler(w http.ResponseWriter, r *http.Request) {
 		handleRegDeleteRequest(w, r)
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.RegistrationsID, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.RegistrationsID, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodGet+"\n"+http.MethodPatch+"\n"+http.MethodDelete, http.StatusNotImplemented)
 		return
 	}
@@ -46,26 +46,26 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Extract the 'token' parameter from the query.
 	if token == "" {            // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
 	if UUID == "" {                 // Validate UUID presence.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	if ID == "" || ID == " " { // Validate ID presence.
-		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectNoID, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve registration data from the database.
 	if err != nil {
-		log.Printf(RegistrationRetrivalError, err)
+		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		http.Error(w, "Error retrieving data from database", http.StatusNotFound)
 		return
 	}
@@ -97,25 +97,25 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Extract the 'token' parameter from the query.
 	if token == "" {            // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
 	if UUID == "" {                 // Validate UUID presence.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	if ID == "" || ID == " " { // Validate ID presence.
-		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectNoID, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	if r.Body == nil { // Validate that the request body is not empty.
-		log.Printf(constants.ClientConnectEmptyBody, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectEmptyBody, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf("Please send a request body")
 		http.Error(w, err, http.StatusBadRequest)
 		return
@@ -123,23 +123,23 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 
 	ci, err, errcode := patchCountryInformation(r, ID, UUID) // Process the patch request.
 	if err != nil {
-		log.Printf(RegistrationPatchError, err)
-		err := fmt.Sprintf(RegistrationPatchError, err)
+		log.Printf(RegistrationPatchError, r.RemoteAddr, err)
+		err := fmt.Sprintf("Error patching registration: %v", err)
 		http.Error(w, err, errcode)
 		return
 	}
 
 	err = _func.ValidateCountryInfo(ci) // Validate the patched country information.
 	if err != nil {
-		log.Printf(RegistrationPatchError, err)
-		err := fmt.Sprintf(RegistrationPatchError, err)
+		log.Printf(RegistrationPatchError, r.RemoteAddr, err)
+		err := fmt.Sprintf("Error patching registration: %v", err)
 		http.Error(w, err, http.StatusBadRequest)
 		return
 	}
 
 	err = db.UpdateRegistration(ID, UUID, ci) // Update the registration in the database.
 	if err != nil {
-		log.Printf("Error saving patched data to database: %v", err)
+		log.Printf("%s: Error saving patched data to database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error saving patched data to database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return
@@ -147,7 +147,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 
 	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the updated registration.
 	if err != nil {
-		log.Printf(RegistrationRetrivalError, err)
+		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		err := fmt.Sprint("Error retrieving updated document: ", err)
 		http.Error(w, err, http.StatusNotFound)
 		return
@@ -181,7 +181,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoInternal, error, int) {
 	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the specific registration.
 	if err != nil {
-		log.Printf(RegistrationRetrivalError, err)
+		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		return nil, err, http.StatusNotFound
 	}
 
@@ -271,26 +271,26 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()      // Extract the query parameters.
 	token := query.Get("token") // Extract the 'token' parameter from the query.
 	if token == "" {            // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
 	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
 	if UUID == "" {                 // Validate UUID presence.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
 	if ID == "" || ID == " " { // Validate ID presence.
-		log.Printf(constants.ClientConnectNoID, r.Method, Endpoints.RegistrationsID)
+		log.Printf(constants.ClientConnectNoID, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		http.Error(w, ProvideID, http.StatusBadRequest)
 		return
 	}
 
 	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the specific registration to be deleted.
 	if err != nil {
-		log.Printf(RegistrationRetrivalError, err)
+		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		err := fmt.Sprint("Error getting registration: ", err)
 		http.Error(w, err, http.StatusNotFound)
 		return
@@ -298,7 +298,7 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 
 	err = db.DeleteRegistration(ID, UUID) // Delete the registration from the database.
 	if err != nil {
-		log.Printf("Error deleting registration from database: %v", err)
+		log.Printf("%s: Error deleting registration from database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error deleting registration from database: %v", err)
 		http.Error(w, err, http.StatusInternalServerError)
 		return

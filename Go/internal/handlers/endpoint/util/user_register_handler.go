@@ -26,7 +26,7 @@ func UserRegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		registerUser(w, r) // Handle POST requests
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.UserRegistration, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.UserRegistration, r.Method)
 		http.Error(w, "REST Method: "+r.Method+" not supported. Only supported methods for this endpoint is:\n"+http.MethodPost, http.StatusNotImplemented)
 		return
 	}

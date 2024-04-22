@@ -18,7 +18,7 @@ import (
 func getEndpointStatus(endpointURL string) string {
 	r, err := http.NewRequest(http.MethodGet, endpointURL, nil) // Create a new GET request for the endpoint URL.
 	if err != nil {
-		log.Printf("error in creating request: %v", err)
+		log.Printf("%s: Error in creating request: %v", r.RemoteAddr, err)
 		return "Failed to create request"
 	}
 
@@ -29,7 +29,7 @@ func getEndpointStatus(endpointURL string) string {
 
 	res, err := client.Do(r) // Execute the request.
 	if err != nil {
-		log.Printf("error in receiving response: %v", err)
+		log.Printf("%s: Error in receiving response: %v", r.RemoteAddr, err)
 		return "Failed to connect"
 	}
 	// Ensure the response body is closed after the function exits, checking for errors.
@@ -49,7 +49,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 		handleStatusGetRequest(w, r) // Handle GET requests with handleStatusGetRequest.
 	default:
 		// Log and return an error for unsupported HTTP methods
-		log.Printf(constants.ClientConnectUnsupported, Endpoints.Status, r.Method)
+		log.Printf(constants.ClientConnectUnsupported, r.RemoteAddr, Endpoints.Status, r.Method)
 		http.Error(w, fmt.Sprintf("REST Method: %s not supported. Only GET is supported for this endpoint", r.Method), http.StatusNotImplemented)
 	}
 }
@@ -58,21 +58,21 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token") // Retrieve the API token from query parameters.
 	if token == "" {                    // Validate token presence.
-		log.Printf(constants.ClientConnectNoToken, r.Method, Endpoints.Status)
+		log.Printf(constants.ClientConnectNoToken, r.RemoteAddr, r.Method, Endpoints.Status)
 		http.Error(w, "Please provide API Token", http.StatusUnauthorized)
 		return
 	}
 
 	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID associated with the API token.
 	if UUID == "" {                 // Validate UUID presence.
-		log.Printf(constants.ClientConnectUnauthorized, r.Method, Endpoints.Status)
+		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Status)
 		http.Error(w, "API key not accepted", http.StatusNotAcceptable)
 		return
 	}
 
 	webhooksUser, err := db.GetWebhooksUser(UUID) // Retrieve user data associated with webhooks.
 	if err != nil {
-		log.Printf("Error retrieving user's webhooks: %v", err)
+		log.Printf("%s: Error retrieving user's webhooks: %v", r.RemoteAddr, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
