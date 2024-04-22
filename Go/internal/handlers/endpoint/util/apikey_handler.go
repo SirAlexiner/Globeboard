@@ -52,7 +52,7 @@ func handleApiKeyDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.DeleteApiKey(UUID, token) // Attempt to delete the API key.
+	err = db.DeleteApiKey(r.RemoteAddr, UUID, token) // Attempt to delete the API key.
 	if err != nil {
 		log.Printf("%s: Error deleting API Key: %v", r.RemoteAddr, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError) // Respond with internal server error if deletion fails.
@@ -81,7 +81,7 @@ func handleApiKeyGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.AddApiKey(UDID, UUID, key) // Attempt to add the new API key to the database.
+	err = db.AddApiKey(r.RemoteAddr, UDID, UUID, key) // Attempt to add the new API key to the database.
 	if err != nil {
 		log.Printf("%s: Error creating API Key: %v", r.RemoteAddr, err)
 		errorMessage := fmt.Sprintf("Error creating API Key: %v", err)

@@ -63,14 +63,14 @@ func handleStatusGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID associated with the API token.
-	if UUID == "" {                 // Validate UUID presence.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve the UUID associated with the API token.
+	if UUID == "" {                               // Validate UUID presence.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Status)
 		http.Error(w, "API key not accepted", http.StatusNotAcceptable)
 		return
 	}
 
-	webhooksUser, err := db.GetWebhooksUser(UUID) // Retrieve user data associated with webhooks.
+	webhooksUser, err := db.GetWebhooksUser(r.RemoteAddr, UUID) // Retrieve user data associated with webhooks.
 	if err != nil {
 		log.Printf("%s: Error retrieving user's webhooks: %v", r.RemoteAddr, err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

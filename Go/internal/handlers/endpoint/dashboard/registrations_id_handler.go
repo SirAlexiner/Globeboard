@@ -50,8 +50,8 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
-	if UUID == "" {                 // Validate UUID presence.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve the UUID for the API key.
+	if UUID == "" {                               // Validate UUID presence.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -63,7 +63,7 @@ func handleRegGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve registration data from the database.
+	reg, err := db.GetSpecificRegistration(r.RemoteAddr, ID, UUID) // Retrieve registration data from the database.
 	if err != nil {
 		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		http.Error(w, "Error retrieving data from database", http.StatusNotFound)
@@ -101,8 +101,8 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
-	if UUID == "" {                 // Validate UUID presence.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve the UUID for the API key.
+	if UUID == "" {                               // Validate UUID presence.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -137,7 +137,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.UpdateRegistration(ID, UUID, ci) // Update the registration in the database.
+	err = db.UpdateRegistration(r.RemoteAddr, ID, UUID, ci) // Update the registration in the database.
 	if err != nil {
 		log.Printf("%s: Error saving patched data to database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error saving patched data to database: %v", err)
@@ -145,7 +145,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the updated registration.
+	reg, err := db.GetSpecificRegistration(r.RemoteAddr, ID, UUID) // Retrieve the updated registration.
 	if err != nil {
 		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		err := fmt.Sprint("Error retrieving updated document: ", err)
@@ -179,7 +179,7 @@ func handleRegPatchRequest(w http.ResponseWriter, r *http.Request) {
 
 // patchCountryInformation updates the country information based on the provided patch data.
 func patchCountryInformation(r *http.Request, ID, UUID string) (*structs.CountryInfoInternal, error, int) {
-	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the specific registration.
+	reg, err := db.GetSpecificRegistration(r.RemoteAddr, ID, UUID) // Retrieve the specific registration.
 	if err != nil {
 		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		return nil, err, http.StatusNotFound
@@ -275,8 +275,8 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
-	if UUID == "" {                 // Validate UUID presence.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve the UUID for the API key.
+	if UUID == "" {                               // Validate UUID presence.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.RegistrationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -288,7 +288,7 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve the specific registration to be deleted.
+	reg, err := db.GetSpecificRegistration(r.RemoteAddr, ID, UUID) // Retrieve the specific registration to be deleted.
 	if err != nil {
 		log.Printf(RegistrationRetrivalError, r.RemoteAddr, err)
 		err := fmt.Sprint("Error getting registration: ", err)
@@ -296,7 +296,7 @@ func handleRegDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.DeleteRegistration(ID, UUID) // Delete the registration from the database.
+	err = db.DeleteRegistration(r.RemoteAddr, ID, UUID) // Delete the registration from the database.
 	if err != nil {
 		log.Printf("%s: Error deleting registration from database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error deleting registration from database: %v", err)

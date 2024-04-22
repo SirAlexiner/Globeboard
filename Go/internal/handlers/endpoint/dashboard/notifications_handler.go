@@ -37,8 +37,8 @@ func handleNotifPostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
-	if UUID == "" {                 // Check if UUID is valid.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve UUID associated with the API token.
+	if UUID == "" {                               // Check if UUID is valid.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -65,14 +65,14 @@ func handleNotifPostRequest(w http.ResponseWriter, r *http.Request) {
 	webhook.ID = ID
 	webhook.UUID = UUID
 
-	err := db.AddWebhook(UDID, webhook) // Add the webhook to the database.
+	err := db.AddWebhook(r.RemoteAddr, UDID, webhook) // Add the webhook to the database.
 	if err != nil {
 		log.Println("Error saving data to database" + err.Error())
 		http.Error(w, "Error storing data in database", http.StatusInternalServerError)
 		return
 	}
 
-	hook, err := db.GetSpecificWebhook(ID, UUID) // Retrieve the newly added webhook to confirm its addition.
+	hook, err := db.GetSpecificWebhook(r.RemoteAddr, ID, UUID) // Retrieve the newly added webhook to confirm its addition.
 	if err != nil {
 		log.Print("Error getting document from database: ", err)
 		http.Error(w, "Error confirming data added to database", http.StatusInternalServerError)
@@ -104,14 +104,14 @@ func handleNotifGetAllRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
-	if UUID == "" {                 // Check if UUID is valid.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve UUID associated with the API token.
+	if UUID == "" {                               // Check if UUID is valid.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Notifications)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	regs, err := db.GetWebhooksUser(UUID) // Retrieve all webhooks associated with the user (UUID).
+	regs, err := db.GetWebhooksUser(r.RemoteAddr, UUID) // Retrieve all webhooks associated with the user (UUID).
 	if err != nil {
 		log.Printf("%s: Error retrieving webhooks from database: %v", r.RemoteAddr, err)
 		errmsg := fmt.Sprint("Error retrieving webhooks from database: ", err)

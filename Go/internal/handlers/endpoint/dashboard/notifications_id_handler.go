@@ -36,8 +36,8 @@ func handleNotifGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
-	if UUID == "" {                 // Check if UUID is valid.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve UUID associated with the API token.
+	if UUID == "" {                               // Check if UUID is valid.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -49,7 +49,7 @@ func handleNotifGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hook, err := db.GetSpecificWebhook(ID, UUID) // Retrieve the specific webhook by ID and UUID.
+	hook, err := db.GetSpecificWebhook(r.RemoteAddr, ID, UUID) // Retrieve the specific webhook by ID and UUID.
 	if err != nil {
 		log.Printf("%s: Error getting webhook from database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error getting webhook from database: %v", err)
@@ -79,8 +79,8 @@ func handleNotifDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with the API token.
-	if UUID == "" {                 // Check if UUID is valid.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve UUID associated with the API token.
+	if UUID == "" {                               // Check if UUID is valid.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.NotificationsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -92,7 +92,7 @@ func handleNotifDeleteRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := db.DeleteWebhook(ID, UUID) // Delete the specific webhook by ID and UUID from the database.
+	err := db.DeleteWebhook(r.RemoteAddr, ID, UUID) // Delete the specific webhook by ID and UUID from the database.
 	if err != nil {
 		log.Printf(" %s: Error deleting data from database: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Error deleting data from database: %v", err)

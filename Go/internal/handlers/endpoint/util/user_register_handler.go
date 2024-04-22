@@ -72,7 +72,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 	UDID := _func.GenerateUID(constants.DocIdLength)    // Generate a unique document ID.
 	key := _func.GenerateAPIKey(constants.ApiKeyLength) // Generate a new API key.
 
-	err = db.AddApiKey(UDID, u.UID, key) // Store the new API key in the database.
+	err = db.AddApiKey(r.RemoteAddr, UDID, u.UID, key) // Store the new API key in the database.
 	if err != nil {
 		log.Printf("%s Error saving API Key: %v\n", r.RemoteAddr, err) // Log the error.
 		http.Error(w, ISE, http.StatusInternalServerError)             // Report API key storage error.

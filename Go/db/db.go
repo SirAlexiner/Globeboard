@@ -78,7 +78,7 @@ func TestDBConnection() string {
 }
 
 // AddApiKey adds a new API key to Firestore, ensuring it does not already exist for the provided user (UUID).
-func AddApiKey(docID, UUID string, key string) error {
+func AddApiKey(IP, docID, UUID string, key string) error {
 	ref := Client.Collection(Firestore.ApiKeyCollection) // Reference to the APIKey collection in Firestore.
 
 	// Query for existing API keys with the same UUID.
@@ -105,12 +105,12 @@ func AddApiKey(docID, UUID string, key string) error {
 		return err // Return formatted error if setting the document fails.
 	}
 
-	log.Printf("API key %s created successfully.", apiKeys.APIKey) // Log success.
-	return nil                                                     // Return nil error on success.
+	log.Printf("%s: API key %s created successfully.", IP, apiKeys.APIKey) // Log success.
+	return nil                                                             // Return nil error on success.
 }
 
 // DeleteApiKey deletes an API key from Firestore based on UUID and key value.
-func DeleteApiKey(UUID, apiKey string) error {
+func DeleteApiKey(IP, UUID, apiKey string) error {
 	ref := Client.Collection(Firestore.ApiKeyCollection) // Reference to the APIKey collection in Firestore.
 
 	// Query for the API key document based on UUID and key.
@@ -138,12 +138,12 @@ func DeleteApiKey(UUID, apiKey string) error {
 		return fmt.Errorf("failed to delete API Key: %v", err) // Return formatted error if delete fails.
 	}
 
-	log.Printf("API key %s deleted successfully.", apiKey) // Log success.
-	return nil                                             // Return nil error on success.
+	log.Printf("%s: API key %s deleted successfully.", IP, apiKey) // Log success.
+	return nil                                                     // Return nil error on success.
 }
 
 // GetAPIKeyUUID retrieves the UUID associated with a specific API key from Firestore.
-func GetAPIKeyUUID(apiKey string) string {
+func GetAPIKeyUUID(IP, apiKey string) string {
 	ref := Client.Collection(Firestore.ApiKeyCollection) // Reference to the APIKey collection in Firestore.
 
 	// Query for the API key document based on the key value.
@@ -171,13 +171,13 @@ func GetAPIKeyUUID(apiKey string) string {
 		log.Println("Error getting user:", err)
 		return "" // Return an empty string if user authentication fails.
 	} else {
-		log.Printf("UUID: %s successfully retrieved from API key: %s.", key.UUID, key.APIKey)
+		log.Printf("%s: UUID: %s successfully retrieved from API key: %s.", IP, key.UUID, key.APIKey)
 		return key.UUID // Return the UUID on success.
 	}
 }
 
 // AddRegistration adds a new registration document to Firestore.
-func AddRegistration(docID string, data *structs.CountryInfoInternal) error {
+func AddRegistration(IP, docID string, data *structs.CountryInfoInternal) error {
 	ref := Client.Collection(Firestore.RegistrationCollection) // Reference to the Registration collection.
 
 	// Set the registration document in Firestore with the given ID and data.
@@ -193,12 +193,12 @@ func AddRegistration(docID string, data *structs.CountryInfoInternal) error {
 		return err // Return error if the document set operation fails.
 	}
 
-	log.Printf("Registration documents %s created successfully.", data.ID)
+	log.Printf("%s: Registration documents %s created successfully.", IP, data.ID)
 	return nil // Return nil if the addition is successful.
 }
 
 // GetRegistrations retrieves all registration documents for a given user (UUID) from Firestore.
-func GetRegistrations(UUID string) ([]*structs.CountryInfoInternal, error) {
+func GetRegistrations(IP, UUID string) ([]*structs.CountryInfoInternal, error) {
 	ref := Client.Collection(Firestore.RegistrationCollection) // Reference to the Registration collection.
 
 	// Query and retrieve all documents where 'UUID' matches, ordered by 'Lastchange' descending.
@@ -216,12 +216,12 @@ func GetRegistrations(UUID string) ([]*structs.CountryInfoInternal, error) {
 		}
 		cis = append(cis, ci) // Append the parsed document to the slice.
 	}
-	log.Printf("Registration documents for user: %s retrieved successfully.", UUID)
+	log.Printf("%s: Registration documents for user: %s retrieved successfully.", IP, UUID)
 	return cis, nil // Return the slice of documents.
 }
 
 // GetSpecificRegistration retrieves a specific registration document by ID and UUID from Firestore.
-func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoInternal, error) {
+func GetSpecificRegistration(IP, ID, UUID string) (*structs.CountryInfoInternal, error) {
 	ref := Client.Collection(Firestore.RegistrationCollection) // Reference to the Registration collection.
 
 	// Query for the specific document with the given 'ID' and 'UUID'.
@@ -241,7 +241,7 @@ func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoInternal, err
 		if err := doc.DataTo(&ci); err != nil {
 			return nil, err // Return error if parsing the document fails.
 		}
-		log.Printf("Registration document %s retrieved successfully.", ci.ID)
+		log.Printf("%s: Registration document %s retrieved successfully.", IP, ci.ID)
 		return ci, nil // Return the parsed document.
 	}
 
@@ -249,7 +249,7 @@ func GetSpecificRegistration(ID, UUID string) (*structs.CountryInfoInternal, err
 }
 
 // UpdateRegistration updates a specific registration document by ID and UUID in Firestore.
-func UpdateRegistration(ID, UUID string, data *structs.CountryInfoInternal) error {
+func UpdateRegistration(IP, ID, UUID string, data *structs.CountryInfoInternal) error {
 	ref := Client.Collection(Firestore.RegistrationCollection) // Reference to the Registration collection.
 
 	// Query for the specific document to update.
@@ -276,7 +276,7 @@ func UpdateRegistration(ID, UUID string, data *structs.CountryInfoInternal) erro
 		if err != nil {
 			return err // Return error if the document update operation fails.
 		}
-		log.Printf("Registration document %s patched successfully.", doc.Ref.ID)
+		log.Printf("%s: Registration document %s patched successfully.", IP, doc.Ref.ID)
 		return nil // Return nil error if the update is successful.
 	}
 
@@ -284,7 +284,7 @@ func UpdateRegistration(ID, UUID string, data *structs.CountryInfoInternal) erro
 }
 
 // DeleteRegistration deletes a specific registration document by ID and UUID from Firestore.
-func DeleteRegistration(ID, UUID string) error {
+func DeleteRegistration(IP, ID, UUID string) error {
 	ref := Client.Collection(Firestore.RegistrationCollection) // Reference to the Registration collection.
 
 	// Query for the specific document to delete.
@@ -312,12 +312,12 @@ func DeleteRegistration(ID, UUID string) error {
 		return fmt.Errorf("failed to delete document: %v", err) // Return formatted error if delete fails.
 	}
 
-	log.Printf("Registration document %s deleted successfully\n", docID)
+	log.Printf("%s: Registration document %s deleted successfully\n", IP, docID)
 	return nil // Return nil if the deletion is successful.
 }
 
 // AddWebhook creates a new webhook entry in Firestore.
-func AddWebhook(docID string, webhook *structs.WebhookInternal) error {
+func AddWebhook(IP, docID string, webhook *structs.WebhookInternal) error {
 	ref := Client.Collection(Firestore.WebhookCollection) // Reference to the Webhook collection in Firestore.
 
 	// Set the webhook document with the provided ID and data.
@@ -326,8 +326,8 @@ func AddWebhook(docID string, webhook *structs.WebhookInternal) error {
 		return err // Return error if addition fails.
 	}
 
-	log.Printf("Webhook %s created successfully.", webhook.ID) // Log success.
-	return nil                                                 // Return nil error on successful addition.
+	log.Printf("%s: Webhook %s created successfully.", IP, webhook.ID) // Log success.
+	return nil                                                         // Return nil error on successful addition.
 }
 
 // GetAllWebhooks retrieves all webhook entries from Firestore.
@@ -355,7 +355,7 @@ func GetAllWebhooks() ([]structs.WebhookInternal, error) {
 }
 
 // GetWebhooksUser retrieves all webhook entries for a specific user (UUID) from Firestore.
-func GetWebhooksUser(UUID string) ([]structs.WebhookResponse, error) {
+func GetWebhooksUser(IP, UUID string) ([]structs.WebhookResponse, error) {
 	ref := Client.Collection(Firestore.WebhookCollection) // Reference to the Webhook collection.
 
 	// Query and retrieve all documents from the webhook collection where 'UUID' matches the provided UUID.
@@ -374,12 +374,12 @@ func GetWebhooksUser(UUID string) ([]structs.WebhookResponse, error) {
 		webhooks = append(webhooks, webhook) // Append the parsed document to the slice.
 	}
 
-	log.Printf("Webhooks retrieved successfully for user: %s.", UUID) // Log success.
-	return webhooks, nil                                              // Return the slice of webhook documents for the user.
+	log.Printf("%s: Webhooks retrieved successfully for user: %s.", IP, UUID) // Log success.
+	return webhooks, nil                                                      // Return the slice of webhook documents for the user.
 }
 
 // GetSpecificWebhook retrieves a specific webhook entry by ID and UUID from Firestore.
-func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
+func GetSpecificWebhook(IP, ID, UUID string) (*structs.WebhookResponse, error) {
 	ref := Client.Collection(Firestore.WebhookCollection) // Reference to the Webhook collection.
 
 	// Query for the specific document with the given 'ID' and 'UUID'.
@@ -400,15 +400,15 @@ func GetSpecificWebhook(ID, UUID string) (*structs.WebhookResponse, error) {
 			return nil, err // Return error if parsing the document fails.
 		}
 
-		log.Printf("Webhook %s retrieved successfully.", webhook.ID) // Log success.
-		return webhook, nil                                          // Return the parsed document.
+		log.Printf("%s: Webhook %s retrieved successfully.", IP, webhook.ID) // Log success.
+		return webhook, nil                                                  // Return the parsed document.
 	}
 
 	return nil, errors.New("no document with that ID was found") // Return error if no document is found.
 }
 
 // DeleteWebhook deletes a specific webhook entry by ID and UUID from Firestore.
-func DeleteWebhook(ID, UUID string) error {
+func DeleteWebhook(IP, ID, UUID string) error {
 	ref := Client.Collection(Firestore.WebhookCollection) // Reference to the Webhook collection.
 
 	// Query for the specific document to delete.
@@ -437,6 +437,6 @@ func DeleteWebhook(ID, UUID string) error {
 		return fmt.Errorf("failed to delete document: %v", err) // Return formatted error if delete fails.
 	}
 
-	log.Printf("Webhook %s deleted successfully.", docID) // Log success.
-	return nil                                            // Return nil error on successful operation.
+	log.Printf("%s: Webhook %s deleted successfully.", IP, docID) // Log success.
+	return nil                                                    // Return nil error on successful operation.
 }

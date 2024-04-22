@@ -62,8 +62,8 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve the UUID for the API key.
-	if UUID == "" {                 // Validate UUID presence.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve the UUID for the API key.
+	if UUID == "" {                               // Validate UUID presence.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -91,14 +91,14 @@ func handleRegPostRequest(w http.ResponseWriter, r *http.Request) {
 	ci.ID = URID
 	ci.UUID = UUID
 
-	err = db.AddRegistration(UDID, ci) // Add Registration to the Database.
+	err = db.AddRegistration(r.RemoteAddr, UDID, ci) // Add Registration to the Database.
 	if err != nil {
 		log.Println("Error saving data to database" + err.Error())
 		http.Error(w, "Error storing data in database", http.StatusInternalServerError)
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(URID, UUID) // Retrieve specific registration details.
+	reg, err := db.GetSpecificRegistration(r.RemoteAddr, URID, UUID) // Retrieve specific registration details.
 	if err != nil {
 		log.Print("Error getting document from database: ", err)
 		http.Error(w, "Error confirming data added to database", http.StatusInternalServerError)
@@ -140,14 +140,14 @@ func handleRegGetAllRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Extract the UUID parameter from the API token.
-	if UUID == "" {                 // Validate UUID presence.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Extract the UUID parameter from the API token.
+	if UUID == "" {                               // Validate UUID presence.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.Registrations)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
 		return
 	}
-	regs, err := db.GetRegistrations(UUID) // Retrieve the user's Registrations.
+	regs, err := db.GetRegistrations(r.RemoteAddr, UUID) // Retrieve the user's Registrations.
 	if err != nil {
 		log.Printf("%s: Error retrieving documents from database: %s", r.RemoteAddr, err)
 		errmsg := fmt.Sprint("Error retrieving documents from database: ", err)

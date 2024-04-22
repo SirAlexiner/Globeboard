@@ -43,8 +43,8 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ProvideAPI, http.StatusUnauthorized)
 		return
 	}
-	UUID := db.GetAPIKeyUUID(token) // Retrieve UUID associated with API token.
-	if UUID == "" {                 // Check if UUID is retrieved.
+	UUID := db.GetAPIKeyUUID(r.RemoteAddr, token) // Retrieve UUID associated with API token.
+	if UUID == "" {                               // Check if UUID is retrieved.
 		log.Printf(constants.ClientConnectUnauthorized, r.RemoteAddr, r.Method, Endpoints.DashboardsID)
 		err := fmt.Sprintf(APINotAccepted)
 		http.Error(w, err, http.StatusNotAcceptable)
@@ -56,7 +56,7 @@ func handleDashboardGetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reg, err := db.GetSpecificRegistration(ID, UUID) // Retrieve registration by ID for user (UUID).
+	reg, err := db.GetSpecificRegistration(r.RemoteAddr, ID, UUID) // Retrieve registration by ID for user (UUID).
 	if err != nil {
 		log.Printf("%s: Error getting registration: %v", r.RemoteAddr, err)
 		err := fmt.Sprintf("Dashboard doesn't exist: %v", err)
